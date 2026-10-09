@@ -1,6 +1,6 @@
 # 朋友的酒
 
-Minecraft Java 模组，模组 ID 为 `friendswine`，当前源码版本 **0.1.10**。本仓库包含六个版本工程、测试和原始素材，可独立克隆构建。
+Minecraft Java 模组，模组 ID 为 `friendswine`，当前源码版本 **0.1.10**。本仓库包含六个版本工程、测试和原始素材，可独立克隆构建。当前阶段先以私有仓库托管，维护者审核并明确确认后再公开。
 
 ## 玩法
 
@@ -91,7 +91,7 @@ gpt6.1辅助完成。共创作者：你个人机cc、if_you（_跟着风）。
 - 你个人机cc：[bilibili](https://space.bilibili.com/400763031?) · [抖音](https://v.douyin.com/iyCu2FJYTGc/)
 - if_you（_跟着风）：[bilibili](https://space.bilibili.com/409729840?) · [抖音](https://v.douyin.com/KDs5ZxJh5V8/)
 
-模型、音乐、贴图及 PNG／GIF 来源为项目提供的原始素材，副本随仓库保存。模组沿用 **All Rights Reserved** 声明，本次公开源码不修改既有许可。
+模型、音乐、贴图及 PNG／GIF 来源为项目提供的原始素材，副本随仓库保存。模组沿用 **All Rights Reserved** 声明，源码托管不修改既有许可。
 
 工程源于 [NeoForge MDK 1.21.1](https://github.com/NeoForgeMDKs/MDK-1.21.1-ModDevGradle)，模板提交为 `0d385327b15a9497991c0cc032eb63bc18aa3cf7`。模板文件的 MIT 许可保留于 [TEMPLATE_LICENSE.txt](mod/TEMPLATE_LICENSE.txt)，Mojang 映射说明见[工程上游资料](mod/README.md)。
 
