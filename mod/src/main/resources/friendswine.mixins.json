@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "com.friendswine.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": ["EntityRenderDispatcherMixin", "CameraMixin"],
+  "injectors": {"defaultRequire": 1}
+}

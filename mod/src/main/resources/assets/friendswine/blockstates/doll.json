@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "friendswine:block/doll"
+    },
+    "facing=east": {
+      "model": "friendswine:block/doll",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "friendswine:block/doll",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "friendswine:block/doll",
+      "y": 270
+    }
+  }
+}

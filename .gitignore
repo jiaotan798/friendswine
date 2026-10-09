@@ -1,0 +1,38 @@
+# 六个工程的构建缓存与成品由 Gradle 重建，不作为源码提交。
+.gradle/
+build/
+out/
+bin/
+repo/
+**/src/generated/**/.cache/
+
+# 开发游戏目录含存档、运行配置和日志。
+/mod/run*/
+/ports/*/run*/
+logs/
+crash-reports/
+*.log
+/.verification/
+
+# 本地编辑器、系统与 Python 缓存。
+.idea/
+.vscode/
+.settings/
+.classpath
+.project
+*.iml
+*.iws
+*.ipr
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+
+# 本地认证与环境配置不得进入公开源码。
+.env
+.env.*
+!.env.example
+
+# Wrapper JAR 是独立构建入口的一部分，必须保留。
+*.jar
+!**/gradle/wrapper/gradle-wrapper.jar
