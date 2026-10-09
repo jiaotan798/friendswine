@@ -86,14 +86,16 @@ node .\assets\source\check-resources.mjs
 
 ## 署名与许可
 
-gpt6.1辅助完成。共创作者：jiaotan_、你个人机cc。
+共创作者：jiaotan_、你个人机cc。
 
 - jiaotan_：[bilibili](https://space.bilibili.com/409729840?) · [抖音](https://v.douyin.com/KDs5ZxJh5V8/)
 - 你个人机cc：[bilibili](https://space.bilibili.com/400763031?) · [抖音](https://v.douyin.com/iyCu2FJYTGc/)
 
-模型、音乐、贴图及 PNG／GIF 来源为项目提供的原始素材，副本随仓库保存。模组沿用 **All Rights Reserved** 声明，源码托管不修改既有许可。
+**素材来源**：模型、音乐、贴图及 PNG／GIF 来自项目提供的原始素材，原始副本随仓库保存。
 
-工程源于 [NeoForge MDK 1.21.1](https://github.com/NeoForgeMDKs/MDK-1.21.1-ModDevGradle)，模板提交为 `0d385327b15a9497991c0cc032eb63bc18aa3cf7`。模板文件的 MIT 许可保留于 [TEMPLATE_LICENSE.txt](mod/TEMPLATE_LICENSE.txt)，Mojang 映射说明见[工程上游资料](mod/README.md)。
+**模组许可**：沿用 **All Rights Reserved** 声明，源码托管不修改既有许可。
+
+**工程来源**：基于 [NeoForge MDK 1.21.1](https://github.com/NeoForgeMDKs/MDK-1.21.1-ModDevGradle/tree/0d385327b15a9497991c0cc032eb63bc18aa3cf7)。模板文件的 MIT 许可见 [TEMPLATE_LICENSE.txt](mod/TEMPLATE_LICENSE.txt)，Mojang 映射说明见[工程上游资料](mod/README.md)。
 
 ## 维护与验证边界
 
