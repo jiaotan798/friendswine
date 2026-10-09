@@ -2,6 +2,10 @@
 
 Minecraft Java 模组，模组 ID 为 `friendswine`，当前源码版本 **0.1.12**。本仓库包含六个版本工程、测试和原始素材，可独立克隆构建。
 
+## 下载与安装
+
+在 [0.1.12 发布页](https://github.com/jiaotan798/friendswine/releases/tag/v0.1.12)下载成品。按 Minecraft 版本和加载器选择一个 JAR，放入游戏的 `mods` 文件夹；加载器、Java 与 Fabric API 要求见[六版本工程](#六版本工程)。
+
 ## 玩法
 
 - 玩偶：右键开始循环音乐、果冻回弹与自转，再次右键停止。音乐每约 56.294 秒循环，播放状态随玩偶保存。
