@@ -43,7 +43,7 @@ logoBlur=false
 credits="gpt6.1辅助完成"
 
 # The authors of the mod, displayed in the mod UI (optional)
-authors="你个人机cc、if_you（_跟着风）"
+authors="jiaotan_、你个人机cc"
 
 # The description text for the mod (multi line!) (#mandatory)
 description='''
@@ -52,13 +52,13 @@ description='''
 独立创造页提供玩偶、遥控器和朋友的酒；饮酒获得个人动画，成年傻子村民每日限量兑换。
 
 gpt6.1辅助完成
-共创作者：你个人机cc、if_you（_跟着风）
+共创作者：jiaotan_、你个人机cc
+jiaotan_：
+bilibili：https://space.bilibili.com/409729840?
+抖音：https://v.douyin.com/KDs5ZxJh5V8/
 你个人机cc：
 bilibili：https://space.bilibili.com/400763031?
 抖音：https://v.douyin.com/iyCu2FJYTGc/
-if_you（_跟着风）：
-bilibili：https://space.bilibili.com/409729840?
-抖音：https://v.douyin.com/KDs5ZxJh5V8/
 '''
 
 # The [[mixins]] block allows you to declare your mixin config to FML so that it gets loaded.
