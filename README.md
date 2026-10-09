@@ -86,10 +86,10 @@ node .\assets\source\check-resources.mjs
 
 ## 署名与许可
 
-gpt6.1辅助完成。共创作者：你个人机cc、if_you（_跟着风）。
+gpt6.1辅助完成。共创作者：jiaotan_、你个人机cc。
 
+- jiaotan_：[bilibili](https://space.bilibili.com/409729840?) · [抖音](https://v.douyin.com/KDs5ZxJh5V8/)
 - 你个人机cc：[bilibili](https://space.bilibili.com/400763031?) · [抖音](https://v.douyin.com/iyCu2FJYTGc/)
-- if_you（_跟着风）：[bilibili](https://space.bilibili.com/409729840?) · [抖音](https://v.douyin.com/KDs5ZxJh5V8/)
 
 模型、音乐、贴图及 PNG／GIF 来源为项目提供的原始素材，副本随仓库保存。模组沿用 **All Rights Reserved** 声明，源码托管不修改既有许可。
 
