@@ -1,0 +1,10 @@
+* text=auto eol=lf
+# Wrapper 在 Linux/macOS 上直接执行，必须使用 LF。
+**/gradlew text eol=lf
+**/gradlew.bat text eol=crlf
+*.png binary
+*.gif binary
+*.ogg binary
+*.mp3 binary
+*.nbt binary
+*.jar binary

@@ -1,0 +1,33 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="All Rights Reserved"
+[[mods]]
+modId="friendswine"
+version="0.1.10"
+displayName="朋友的酒"
+logoFile="friendswine.png"
+authors="你个人机cc、if_you（_跟着风）"
+description='''放置玩偶后右键开关音乐与果冻效果，也可绑定遥控器切换压扁回弹、加入自转、加入逆时针绕圈、关闭。
+50 格内生物寻路，10 格内平滑吸引，在水平五格圆内分散站位或绕圈；适配 YSM 世界实体渲染。
+独立创造页提供玩偶、遥控器和朋友的酒；饮酒获得个人动画，成年傻子村民每日限量兑换。
+
+gpt6.1辅助完成
+共创作者：你个人机cc、if_you（_跟着风）
+你个人机cc：
+bilibili：https://space.bilibili.com/400763031?
+抖音：https://v.douyin.com/iyCu2FJYTGc/
+if_you（_跟着风）：
+bilibili：https://space.bilibili.com/409729840?
+抖音：https://v.douyin.com/KDs5ZxJh5V8/'''
+[[dependencies.friendswine]]
+modId="forge"
+mandatory=true
+versionRange="[47.4.23,)"
+ordering="NONE"
+side="BOTH"
+[[dependencies.friendswine]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1]"
+ordering="NONE"
+side="BOTH"

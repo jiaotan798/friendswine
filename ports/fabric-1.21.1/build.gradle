@@ -1,0 +1,29 @@
+plugins { id 'net.fabricmc.fabric-loom-remap' version '1.15.5' }
+version = mod_version
+group = 'com.friendswine'
+base { archivesName = 'friendswine' }
+repositories { maven { url = 'https://maven.terraformersmc.com/releases/' } }
+dependencies {
+    minecraft ('com.mojang:minecraft:' + minecraft_version)
+    mappings loom.officialMojangMappings()
+    modImplementation ('net.fabricmc:fabric-loader:' + loader_version)
+    modImplementation ('net.fabricmc.fabric-api:fabric-api:' + fabric_api_version)
+    modCompileOnly 'com.terraformersmc:modmenu:11.0.3'
+    modLocalRuntime 'com.terraformersmc:modmenu:11.0.3'
+}
+java { toolchain.languageVersion = JavaLanguageVersion.of(21) }
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+compileJava.source file('../../mod/src/main/java/com/friendswine/JellyAnimation.java')
+compileJava.source file('../../mod/src/main/java/com/friendswine/GuestAnimation.java')
+sourceSets.main.resources.srcDir('../../mod/src/main/resources')
+processResources {
+    inputs.property 'version', mod_version
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    exclude 'data/friendswine/structure/**'
+    filesMatching('fabric.mod.json') { expand(version: mod_version) }
+}
+remapJar { archiveFileName = 'friendswine-' + mod_version + '-Fabric-' + minecraft_version + '.jar' }
+jar { archiveClassifier = 'dev' }
+loom { runs { client { programArgs '--username', 'FriendsWineQA' }; server { programArgs '--nogui' } } }
+
+fabricApi { configureTests { createSourceSet = true; modId = "friendswine-tests"; enableClientGameTests = false; eula = true } }

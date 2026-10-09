@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "friendswine:item/doll",
+    "model": {
+      "type": "friendswine:doll"
+    }
+  }
+}

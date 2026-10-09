@@ -1,0 +1,12 @@
+{
+  "doll_music": {
+    "subtitle": "subtitles.friendswine.doll_music",
+    "sounds": [
+      {
+        "name": "friendswine:doll_music",
+        "stream": true,
+        "attenuation_distance": 20
+      }
+    ]
+  }
+}

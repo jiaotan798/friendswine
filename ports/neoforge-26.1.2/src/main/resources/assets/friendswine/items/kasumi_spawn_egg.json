@@ -1,0 +1,10 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "friendswine:item/kasumi_spawn_egg",
+    "tints": [
+      {"type": "minecraft:constant", "value": 7361595},
+      {"type": "minecraft:constant", "value": 15307572}
+    ]
+  }
+}
