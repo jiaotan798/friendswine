@@ -438,9 +438,19 @@ public final class DollGameTests {
                     "Reloading resumes physical orbit");
             doll.cycleRemote(); PartyGuestGameTests.clean(helper);
             helper.assertFalse(doll.isPlaying(), "Fourth phase stops orbit");
+            // 保留活动玩偶与后续速度、碰撞信息，便于区分吸引未释放和实体碰撞导致的漂移。
+            System.out.println("[friendswine orbit stop] active dolls=" + DollBlockEntity.getActiveDolls(helper.getLevel()).stream()
+                    .map(active -> active.getBlockPos() + "/mode=" + active.getMode()).toList());
             for (Mob mob : mobs) { helper.assertTrue(mob.getNavigation().isDone(), "Stop releases navigation"); mob.setDeltaMovement(Vec3.ZERO); }
         }).thenIdle(5).thenExecute(() -> {
-            for (Mob mob : mobs) helper.assertTrue(mob.getDeltaMovement().horizontalDistanceSqr() < 1e-8, "Stopped orbit applies no force");
+            for (Mob mob : mobs) helper.assertTrue(mob.getDeltaMovement().horizontalDistanceSqr() < 1e-8,
+                    "Stopped orbit applies no force; id=" + mob.getId() + ", position=" + mob.position() + ", velocity=" + mob.getDeltaMovement()
+                            + ", active dolls=" + DollBlockEntity.getActiveDolls(helper.getLevel()).stream()
+                            .map(active -> active.getBlockPos() + "/mode=" + active.getMode()).toList()
+                            + ", nearby collision entities=" + helper.getLevel().getEntities(mob, mob.getBoundingBox().inflate(0.2),
+                                    entity -> entity.isAlive() && entity.isPushable()).stream()
+                            .map(entity -> entity.getType() + "/id=" + entity.getId() + "/position=" + entity.position()
+                                    + "/velocity=" + entity.getDeltaMovement()).toList());
             doll.startPlaying(); PartyGuestGameTests.clean(helper);
             doll.cycleRemote(); PartyGuestGameTests.clean(helper);
             helper.destroyBlock(pos);

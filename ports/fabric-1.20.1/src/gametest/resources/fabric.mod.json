@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "friendswine-tests",
-  "version": "0.1.10",
+  "version": "0.1.12",
   "name": "FriendsWine regression tests",
   "entrypoints": {
     "fabric-gametest": [

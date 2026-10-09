@@ -56,6 +56,7 @@ public final class DollBlockEntity extends BlockEntity {
         return startTick < 0 ? 0 : Math.max(0, gameTime - startTick);
     }
 
+    /** 普通右键和 NPC 放置从第二档开始播放，生物只在进入第三档时生成。 */
     public boolean startPlaying() {
         return startPlaying(FULL);
     }
@@ -69,10 +70,10 @@ public final class DollBlockEntity extends BlockEntity {
         rotationStartTick = nextMode == FULL ? startTick : -1;
         registerLoaded();
         sync();
-        if (level instanceof net.minecraft.server.level.ServerLevel serverLevel) PartyGuestEntity.spawnGuests(serverLevel, worldPosition);
         return true;
     }
 
+    /** 服务端依次切换回弹、自转、绕圈和停止；切档保留音乐进度。 */
     public void cycleRemote() {
         if (level == null || level.isClientSide || isRemoved()) return;
         if (!isPlaying()) {
@@ -80,11 +81,13 @@ public final class DollBlockEntity extends BlockEntity {
         } else if (mode == SQUASH_ONLY) {
             mode = FULL;
             rotationStartTick = level.getGameTime();
-            // Keep the song and squash clock unchanged, including the current sound instance.
+            // 切入自转时保留音乐与回弹的计时，包括当前声音实例。
             sync();
         } else if (mode == FULL) {
             mode = ORBIT;
             sync();
+            // 只在第二档进入第三档的瞬间生成；普通播放、重复启动和存档恢复都不触发。
+            if (level instanceof net.minecraft.server.level.ServerLevel serverLevel) PartyGuestEntity.spawnGuests(serverLevel, worldPosition);
         } else {
             stopPlaying();
         }

@@ -3,7 +3,7 @@ loaderVersion="[47,)"
 license="All Rights Reserved"
 [[mods]]
 modId="friendswine"
-version="0.1.10"
+version="${version}"
 displayName="朋友的酒"
 logoFile="friendswine.png"
 authors="jiaotan_、你个人机cc"
@@ -21,7 +21,7 @@ bilibili：https://space.bilibili.com/400763031?
 [[dependencies.friendswine]]
 modId="forge"
 mandatory=true
-versionRange="[47.4.23,)"
+versionRange="[${forge_min_version},)"
 ordering="NONE"
 side="BOTH"
 [[dependencies.friendswine]]

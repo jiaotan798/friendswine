@@ -1,6 +1,6 @@
 # 朋友的酒
 
-Minecraft Java 模组，模组 ID 为 `friendswine`，当前源码版本 **0.1.10**。本仓库包含六个版本工程、测试和原始素材，可独立克隆构建。当前阶段先以私有仓库托管，维护者审核并明确确认后再公开。
+Minecraft Java 模组，模组 ID 为 `friendswine`，当前源码版本 **0.1.12**。本仓库包含六个版本工程、测试和原始素材，可独立克隆构建。
 
 ## 玩法
 
@@ -8,21 +8,21 @@ Minecraft Java 模组，模组 ID 为 `friendswine`，当前源码版本 **0.1.1
 - 遥控器：右键玩偶绑定，对空气使用依次切换「回弹 → 加入自转 → 加入生物绕圈 → 停止」。切档保留音乐进度，不强制加载目标区块。
 - 朋友的酒：饮用后获得约 168.9 秒酒劲，人物果冻回弹，有酒劲时三个视角的镜头同步回弹；牛奶可解除。
 - 活动玩偶吸引 50 格内生物，音乐范围 20 格、视觉效果范围 10 格。玩家保留移动控制，形变不改变碰撞箱。
-- 户山香澄与艾玛：稀有自然生成，可使用生成蛋。玩偶从停止变为播放时尝试生成合计 6～10 只，16 格内两种生物合计最多 10 只；切档和存档恢复不重复生成。
+- 户山香澄与艾玛：稀有自然生成，可使用生成蛋。遥控器进入第三档时尝试生成，随机目标为 2～4 只，受 16 格内两种生物合计最多 4 只的限制；普通播放、NPC 放置及存档恢复不触发生成。
 - 成年傻子村民通过原版交易窗口提供玩偶、遥控器和酒，每项每日 16 次库存；玩家共享库存，按游戏日期补货。
 
 创造页「朋友的酒」中可取得全部物品，也可使用 `/give @s friendswine:doll`、`friendswine:remote`、`friendswine:wine`、`friendswine:kasumi_spawn_egg`、`friendswine:emma_spawn_egg`。没有合成或酿造配方。多人游戏的客户端与服务器需安装相同目标版本。
 
 ## 六版本工程
 
-| Minecraft | 加载器 | 工程目录 | 构建 JDK | 游戏／成品 Java |
-| --- | --- | --- | --- | --- |
-| 1.20.1 | Forge | `ports/forge-1.20.1` | 17 | 17 |
-| 1.20.1 | Fabric | `ports/fabric-1.20.1` | 21，同时安装 17 | 17 |
-| 1.21.1 | NeoForge | `mod` | 21 | 21 |
-| 1.21.1 | Fabric | `ports/fabric-1.21.1` | 21 | 21 |
-| 26.1.2 | NeoForge | `ports/neoforge-26.1.2` | 25 | 25 |
-| 26.1.2 | Fabric | `ports/fabric-26.1.2` | 25 | 25 |
+| Minecraft | 加载器 | 最低加载器版本 | 工程目录 | 构建 JDK | 游戏／成品 Java |
+| --- | --- | --- | --- | --- | --- |
+| 1.20.1 | Forge | 47.0.0 | `ports/forge-1.20.1` | 17 | 17 |
+| 1.20.1 | Fabric | 0.16.10 | `ports/fabric-1.20.1` | 21，同时安装 17 | 17 |
+| 1.21.1 | NeoForge | 21.1.1 | `mod` | 21 | 21 |
+| 1.21.1 | Fabric | 0.15.11 | `ports/fabric-1.21.1` | 21 | 21 |
+| 26.1.2 | NeoForge | 26.1.2.71 | `ports/neoforge-26.1.2` | 25 | 25 |
+| 26.1.2 | Fabric | 0.18.4 | `ports/fabric-26.1.2` | 25 | 25 |
 
 五个移植工程直接引用 `mod` 中的 `JellyAnimation.java`、`GuestAnimation.java` 和生产资源。请克隆完整仓库并保留目录布局，不要单独移动某个移植工程。加载器、API、插件和 Gradle 版本固定在各工程配置中。
 
@@ -31,6 +31,8 @@ Minecraft Java 模组，模组 ID 为 `friendswine`，当前源码版本 **0.1.1
 安装所需 JDK，将 `JAVA_HOME` 指向表中的构建 JDK，并将其 `bin` 加入 `PATH`。首次构建需要联网下载 Gradle 与依赖。
 
 Fabric 1.20.1 的 Gradle 使用 JDK 21，游戏测试使用 JDK 17；可用 `FRIENDSWINE_JAVA17`、`FRIENDSWINE_JAVA21` 指定两个 JDK 的安装目录。其他工程只需对应版本的 JDK。
+
+Forge／NeoForge 的编译版本与运行时下限分别配置。GameTest 使用工程默认的开发加载器版本；构建兼容旧加载器的成品时，使用后面的最低版本参数。
 
 以下 PowerShell 命令从仓库根目录执行，运行前按目标设置 `JAVA_HOME`：
 
@@ -56,7 +58,15 @@ Fabric 1.20.1 的 Gradle 使用 JDK 21，游戏测试使用 JDK 17；可用 `FRI
 
 Fabric 的 `build` 已包含 GameTest；Forge／NeoForge 显式执行 `runGameTestServer`。GameTest 服务端使用测试运行目录，请勿放入实际游玩存档。Linux／macOS 将 Wrapper 改为 `./对应目录/gradlew`，路径使用 `/`。
 
-成品位于各工程的 `build/libs/`，安装使用 `friendswine-0.1.10-加载器-Minecraft版本.jar`，不要安装带 `dev` 或 `sources` 的文件。客户端开发入口为同一工程的 `runClient`，服务器入口为 `runServer`。
+完成回归测试后，按对应 JDK 构建三个原生加载器的兼容成品：
+
+```powershell
+& .\ports\forge-1.20.1\gradlew.bat -p .\ports\forge-1.20.1 -Pforge_version=47.0.0 build
+& .\mod\gradlew.bat -p .\mod -Pneo_version=21.1.1 build
+& .\ports\neoforge-26.1.2\gradlew.bat -p .\ports\neoforge-26.1.2 -Pneo_version=26.1.2.71 build
+```
+
+成品位于各工程的 `build/libs/`，安装使用 `friendswine-0.1.12-加载器-Minecraft版本.jar`，不要安装带 `dev` 或 `sources` 的文件。客户端开发入口为同一工程的 `runClient`，服务器入口为 `runServer`。
 
 ## 原始素材与资源工具
 
@@ -73,6 +83,8 @@ python .\scripts\prepare-guest-textures.py
 ```
 
 脚本只写生产图集、静态贴图和帧描述，不修改原始素材；逐帧检查 RGBA 像素和原始帧时长，不裁帧、不重新着色。
+
+可用 `--output-root <目录>` 指定另一处输出目录，例如用于临时校验。
 
 使用 Node.js 和 FFmpeg 校验模型、贴图、音频和原始素材：
 
@@ -99,6 +111,4 @@ node .\assets\source\check-resources.mjs
 
 ## 维护与验证边界
 
-六个版本已通过构建和 GameTest。修改公共代码或资源后，应重新构建全部六个版本。
-
-当前版本的双客户端联机及 YSM／车万女仆组合兼容性尚待实测。
+0.1.12 已由维护者完成完整测试。修改公共代码或资源后，应重新构建全部六个版本。

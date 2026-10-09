@@ -1,11 +1,13 @@
 """将仓库内原始 GIF 转为完整画布 RGBA 图集，并校验像素和帧时长。"""
 from pathlib import Path
 from PIL import Image
+import argparse
 import hashlib
 import json
 import shutil
 
 ROOT = Path(__file__).resolve().parents[1]
+OUTPUT_ROOT = ROOT / "mod/src/main/resources/assets/friendswine/textures/entity"
 INPUTS = {
     "kasumi": (
         ROOT / "assets/guests/kasumi/idle.png",
@@ -29,12 +31,13 @@ def bounds_union(bounds):
             max(b[2] for b in bounds), max(b[3] for b in bounds)]
 
 
-def prepare(name, png, gif, expected, columns):
-    """重建生产资源；逐帧检查透明像素和帧时长，原始素材只读。"""
-    destination = ROOT / "mod/src/main/resources/assets/friendswine/textures/entity" / name
+def prepare(name, png, gif, expected, columns, output_root=OUTPUT_ROOT):
+    """在指定目录重建资源并逐帧校验；原始素材只读，默认写入生产资源目录。"""
+    destination = output_root / name
     destination.mkdir(parents=True, exist_ok=True)
-    # 素材已随仓库保存，直接读取，避免同路径复制并保持原件不变。
-    shutil.copy2(png, destination / "idle.png")
+    # 自定义输出目录可能与素材目录重合，跳过同文件复制以避免 SameFileError。
+    if png.resolve() != (destination / "idle.png").resolve():
+        shutil.copy2(png, destination / "idle.png")
     frames, durations = [], []
     with Image.open(gif) as image:
         for i in range(image.n_frames):
@@ -70,5 +73,9 @@ def prepare(name, png, gif, expected, columns):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output-root", type=Path, default=OUTPUT_ROOT,
+                        help="贴图输出目录；默认写入模组的生物贴图目录。")
+    args = parser.parse_args()
     for name, values in INPUTS.items():
-        prepare(name, *values)
+        prepare(name, *values, output_root=args.output_root)

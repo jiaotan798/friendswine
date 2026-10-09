@@ -29,7 +29,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
-/** Registered spawn eggs, real navigation, item ownership and activation-triggered spawning. */
+/** 验证生成蛋、寻路、物品归属，以及第三档生成和两种生物共用的数量上限。 */
 public final class PartyGuestGameTests {
     private static final BlockPos DOLL=new BlockPos(12,1,12);
     public PartyGuestGameTests() {}
@@ -119,49 +119,51 @@ public final class PartyGuestGameTests {
         remove(helper,player); clean(helper); helper.succeed();
     }
 
+    /** 覆盖第三档生成、2／4 只边界、已有个体占位、重复切档及存档恢复。 */
     @GameTest(template="friendswine:doll_range",batch="friendswine-guest-spawning",timeoutTicks=100)
     public static void stageSpawnAndCombinedCap(GameTestHelper helper) {
         prepare(helper); helper.setBlock(DOLL,FriendsWine.DOLL.get());
         DollBlockEntity doll=(DollBlockEntity)helper.getBlockEntity(DOLL);
         ServerPlayer player=player(helper,new Vec3(2.5,1,2.5));
-        boolean seenKasumi=false,seenEmma=false,seenSix=false,seenTen=false;
+        boolean seenKasumi=false,seenEmma=false,seenTwo=false,seenFour=false;
         for (int seed=0;seed<32;seed++) {
             clean(helper); doll.stopPlaying(); helper.getLevel().random.setSeed(seed);
             boolean remote=(seed&1)==1;
             if (remote) remoteFirstStage(helper,player); else clickDoll(helper,player);
-            List<PartyGuestEntity> spawned=guests(helper);
-            int count=spawned.size();
-            helper.assertTrue(count>=6 && count<=10,"An actual closed-to-playing entry creates six to ten combined guests; seed="+seed+", count="+count);
             helper.assertTrue(doll.getMode()==(remote ? DollBlockEntity.SQUASH_ONLY : DollBlockEntity.FULL),"Right click starts stage two; the remote's first press starts stage one");
-            seenKasumi|=spawned.stream().anyMatch(e->!e.isEmma());
-            seenEmma|=spawned.stream().anyMatch(PartyGuestEntity::isEmma);
-            seenSix|=count==6; seenTen|=count==10;
-            for (PartyGuestEntity created:spawned) {
-                created.setNoAi(true);
-                helper.assertTrue(created.position().distanceToSqr(Vec3.atCenterOf(helper.absolutePos(DOLL)))<=256,"Activation guests spawn within sixteen blocks");
-                helper.assertTrue(helper.getLevel().noCollision(created),"Activation uses safe non-colliding ground");
-            }
+            helper.assertTrue(guests(helper).isEmpty(),"Ordinary right click and the remote's first stage never spawn guests");
             long song=doll.getStartTick();
             helper.assertFalse(doll.startPlaying(),"Starting an already-playing doll is rejected");
-            helper.assertTrue(guests(helper).size()==count && doll.getStartTick()==song,"Repeated start neither spawns nor resets the song");
+            helper.assertTrue(guests(helper).isEmpty() && doll.getStartTick()==song,"Repeated start neither spawns nor resets the song");
             if (remote) {
                 doll.cycleRemote();
-                helper.assertTrue(doll.getMode()==DollBlockEntity.FULL && guests(helper).size()==count,"Changing stage one to two does not spawn");
+                helper.assertTrue(doll.getMode()==DollBlockEntity.FULL && guests(helper).isEmpty(),"Changing stage one to two does not spawn");
             }
             doll.cycleRemote();
-            helper.assertTrue(doll.getMode()==DollBlockEntity.ORBIT && doll.getStartTick()==song && guests(helper).size()==count,"Changing stage two to three preserves the song and never spawns");
+            List<PartyGuestEntity> spawned=guests(helper);
+            int count=spawned.size();
+            helper.assertTrue(doll.getMode()==DollBlockEntity.ORBIT && doll.getStartTick()==song,"Entering stage three preserves the song");
+            helper.assertTrue(count>=2 && count<=4,"Only entering third-stage orbit creates two to four combined guests; seed="+seed+", count="+count);
+            seenKasumi|=spawned.stream().anyMatch(e->!e.isEmma());
+            seenEmma|=spawned.stream().anyMatch(PartyGuestEntity::isEmma);
+            seenTwo|=count==2; seenFour|=count==4;
+            for (PartyGuestEntity created:spawned) {
+                created.setNoAi(true);
+                helper.assertTrue(created.position().distanceToSqr(Vec3.atCenterOf(helper.absolutePos(DOLL)))<=256,"Third-stage guests spawn within sixteen blocks");
+                helper.assertTrue(helper.getLevel().noCollision(created),"Third-stage spawning uses safe non-colliding ground");
+            }
             CompoundTag saved=doll.getUpdateTag(helper.getLevel().registryAccess());
             doll.setRemoved();
             doll.loadAdditional(saved,helper.getLevel().registryAccess());
             doll.clearRemoved();
             helper.assertTrue(doll.getMode()==DollBlockEntity.ORBIT && doll.getStartTick()==song,"Actual unload/load restores the saved stage and clock");
-            helper.assertTrue(guests(helper).size()==count,"Loading a playing doll never repeats activation spawning");
+            helper.assertTrue(guests(helper).size()==count,"Loading an orbiting doll never repeats third-stage spawning");
             doll.cycleRemote();
             helper.assertTrue(!doll.isPlaying() && guests(helper).size()==count,"Fourth stage only stops playback");
         }
-        helper.assertTrue(seenKasumi && seenEmma && seenSix && seenTen,"Fixed seeds cover both guest types and both six/ten spawn boundaries");
+        helper.assertTrue(seenKasumi && seenEmma && seenTwo && seenFour,"Fixed seeds cover both guest types and both two/four spawn boundaries");
 
-        // Real spawn-egg and NATURAL spawn entry points both contribute to the shared cap.
+        // 通过真实生成蛋和自然生成入口验证已有个体共同占用上限。
         clean(helper); doll.stopPlaying();
         BlockPos eggGround=helper.absolutePos(new BlockPos(4,0,8));
         player.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(FriendsWine.KASUMI_SPAWN_EGG.get()));
@@ -172,18 +174,27 @@ public final class PartyGuestGameTests {
         helper.assertTrue(natural!=null && natural.isEmma(),"A naturally initialized existing guest participates in the shared cap");
         natural.setNoAi(true);
         clickDoll(helper,player);
-        helper.assertTrue(guests(helper).size()>=8 && guests(helper).size()<=10 && guests(helper).contains(fromEgg) && guests(helper).contains(natural),"Egg and natural individuals count before a six-to-ten activation attempt");
+        helper.assertTrue(guests(helper).size()==2,"Starting stage two leaves existing egg and natural guests unchanged");
+        doll.cycleRemote();
+        helper.assertTrue(guests(helper).size()==4 && guests(helper).contains(fromEgg) && guests(helper).contains(natural),"Egg and natural individuals count toward the shared four-guest third-stage cap");
         int previous=guests(helper).size();
         for (var created:guests(helper)) created.setNoAi(true);
-        doll.stopPlaying(); clickDoll(helper,player);
-        helper.assertTrue(guests(helper).size()>=previous && guests(helper).size()<=10,"A new activation fills only remaining capacity");
+        for (int repeat=0;repeat<10;repeat++) {
+            doll.stopPlaying(); clickDoll(helper,player);
+            helper.assertTrue(guests(helper).size()==previous,"Repeated stage-two starts never add guests");
+            doll.cycleRemote();
+            helper.assertTrue(doll.getMode()==DollBlockEntity.ORBIT && guests(helper).size()==previous,"Repeated third-stage entry cannot exceed the existing four-guest cap");
+        }
         doll.stopPlaying(); clean(helper);
 
-        for (int i=0;i<9;i++) guest(helper,(i&1)==1,new Vec3(4.5+i,1,5.5),true);
+        for (int i=0;i<3;i++) guest(helper,(i&1)==1,new Vec3(4.5+i,1,5.5),true);
         clickDoll(helper,player);
-        helper.assertTrue(guests(helper).size()==10,"Nine preexisting combined guests leave exactly one spawn slot");
+        helper.assertTrue(guests(helper).size()==3,"Stage two never fills available guest capacity");
+        doll.cycleRemote();
+        helper.assertTrue(guests(helper).size()==4,"Three preexisting combined guests leave exactly one third-stage spawn slot");
         doll.stopPlaying(); clickDoll(helper,player);
-        helper.assertTrue(guests(helper).size()==10,"Ten existing guests prevent further activation spawning");
+        doll.cycleRemote();
+        helper.assertTrue(guests(helper).size()==4,"Four existing guests prevent further third-stage spawning");
         doll.stopPlaying(); clean(helper);
 
         for (BlockPos pos:BlockPos.betweenClosed(4,-2,4,20,5,20)) helper.setBlock(pos,Blocks.STONE);
@@ -191,6 +202,8 @@ public final class PartyGuestGameTests {
         doll=(DollBlockEntity)helper.getBlockEntity(DOLL);
         clickDoll(helper,player);
         helper.assertTrue(doll.getMode()==DollBlockEntity.FULL && guests(helper).isEmpty(),"Blocked terrain still starts playback but never forces guests into solid blocks");
+        doll.cycleRemote();
+        helper.assertTrue(doll.getMode()==DollBlockEntity.ORBIT && guests(helper).isEmpty(),"Third-stage spawning never forces guests into blocked terrain");
         doll.stopPlaying(); helper.destroyBlock(DOLL);
         for (BlockPos pos:BlockPos.betweenClosed(4,1,4,20,5,20)) helper.setBlock(pos,Blocks.AIR);
         clean(helper); remove(helper,player); helper.succeed();
@@ -290,10 +303,13 @@ public final class PartyGuestGameTests {
             helper.assertTrue(!restored.isCarryingDoll() && restored.getMainHandItem().isEmpty(),"Successful placement consumes the carried item exactly once");
             DollBlockEntity doll=DollBlockEntity.nearestActive(helper.getLevel(),restored.position(),5);
             helper.assertTrue(doll!=null && doll.getMode()==DollBlockEntity.FULL,"The placed doll starts directly in stage two");
-            helper.assertTrue(guests(helper).size()>=7 && guests(helper).size()<=10,"NPC placement activation creates six-to-nine guests while counting the carrier toward ten");
+            helper.assertTrue(guests(helper).size()==1 && guests(helper).contains(restored),"NPC placement starts stage two without creating more guests");
             cleanExcept(helper,restored);
             helper.assertTrue(doll.getBlockPos().distSqr(restored.blockPosition())<=16,"Placed doll remains within the four-block search");
             helper.assertFalse(restored.tryPlaceCarried(helper.getLevel()),"An empty hand cannot place another doll");
+            doll.cycleRemote();
+            helper.assertTrue(doll.getMode()==DollBlockEntity.ORBIT && guests(helper).size()>=3 && guests(helper).size()<=4,"Entering the NPC-placed doll's third stage creates two-to-three guests while counting its carrier toward four");
+            cleanExcept(helper,restored);
             doll.stopPlaying(); helper.getLevel().destroyBlock(doll.getBlockPos(),false);
             restored.setItemSlot(EquipmentSlot.MAINHAND,named.copy());
             for (ItemEntity item:helper.getLevel().getEntitiesOfClass(ItemEntity.class,restored.getBoundingBox().inflate(8))) item.discard();
@@ -323,9 +339,9 @@ public final class PartyGuestGameTests {
         helper.setBlock(idlePos,FriendsWine.DOLL.get());
         PartyGuestEntity guest=guest(helper,false,new Vec3(7.5,1,12.5),false);
         Vec3 start=guest.position();
-        int[] activationPopulation={0};
+        int[] placementPopulation={0};
         helper.onEachTick(()->{
-            activationPopulation[0]=Math.max(activationPopulation[0],guests(helper).size());
+            placementPopulation[0]=Math.max(placementPopulation[0],guests(helper).size());
             cleanExcept(helper,guest);
         });
         helper.startSequence().thenIdle(12).thenExecute(()->{
@@ -334,7 +350,9 @@ public final class PartyGuestGameTests {
             helper.assertTrue(holder.getMainHandItem().isEmpty(),"Normal AI reaches and steals the holder's doll");
             DollBlockEntity placed=DollBlockEntity.nearestActive(helper.getLevel(),guest.position(),20);
             helper.assertTrue(placed!=null && placed.getMode()==DollBlockEntity.FULL,"Normal AI places the stolen doll and starts stage two");
-            helper.assertTrue(activationPopulation[0]>=7 && activationPopulation[0]<=10,"Actual NPC AI placement uses activation spawning and the combined cap");
+            helper.assertTrue(placementPopulation[0]==1 && guests(helper).size()==1,"Actual NPC AI placement never creates guests in stage two");
+            placed.cycleRemote();
+            helper.assertTrue(placed.getMode()==DollBlockEntity.ORBIT && guests(helper).size()>=3 && guests(helper).size()<=4,"The AI-placed doll spawns guests only when its third stage is entered");
             cleanExcept(helper,guest);
             placed.stopPlaying(); helper.getLevel().destroyBlock(placed.getBlockPos(),false);
             guest.moveTo(helper.absoluteVec(new Vec3(7.5,1,12.5))); guest.setDeltaMovement(Vec3.ZERO);
