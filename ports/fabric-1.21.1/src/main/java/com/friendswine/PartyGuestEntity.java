@@ -220,14 +220,17 @@ public final class PartyGuestEntity extends PathfinderMob {
                 || ((state.is(Blocks.CAMPFIRE) || state.is(Blocks.SOUL_CAMPFIRE)) && state.getValue(BlockStateProperties.LIT));
     }
 
+    /** 进入第三档时，以玩偶中心 16 格范围统计两种生物，并尝试在已加载的安全位置生成。 */
     public static void spawnGuests(ServerLevel level, BlockPos dollPos) {
         Vec3 center = Vec3.atCenterOf(dollPos);
         int existing = level.getEntitiesOfClass(PartyGuestEntity.class, new AABB(dollPos).inflate(16),
                 guest -> guest.isAlive() && guest.position().distanceToSqr(center) <= 16 * 16).size();
-        int wanted = Math.min(10 - existing, 6 + level.random.nextInt(5));
+        // 随机目标为 2～4 只，以共同上限 4 裁减；自然生成和生成蛋也占用名额。
+        int wanted = Math.min(4 - existing, 2 + level.random.nextInt(3));
         for (int count = 0; count < wanted; count++) {
             EntityType<PartyGuestEntity> type = level.random.nextBoolean() ? FriendsWine.KASUMI.get() : FriendsWine.EMMA.get();
             boolean spawned = false;
+            // 每只最多尝试 32 个随机位置，找不到安全落点时放弃，不强制加载区块。
             for (int attempt = 0; attempt < 32 && !spawned; attempt++) {
                 int dx = level.random.nextInt(17) - 8, dz = level.random.nextInt(17) - 8;
                 if (dx * dx + dz * dz < 9 || dx * dx + dz * dz > 64) continue;

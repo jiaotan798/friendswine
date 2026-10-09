@@ -18,9 +18,13 @@ compileJava.source file('../../mod/src/main/java/com/friendswine/GuestAnimation.
 sourceSets.main.resources.srcDir('../../mod/src/main/resources')
 processResources {
     inputs.property 'version', mod_version
+    inputs.property 'loader_min_version', loader_min_version
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     exclude 'data/friendswine/structure/**'
-    filesMatching('fabric.mod.json') { expand(version: mod_version) }
+    // 仅替换版本占位符，保留 JSON 中的转义序列，避免描述里的换行使元数据失效。
+    filesMatching('fabric.mod.json') {
+        filter { line -> line.replace('${version}', mod_version).replace('${loader_min_version}', loader_min_version) }
+    }
 }
 jar { archiveFileName = 'friendswine-' + mod_version + '-Fabric-' + minecraft_version + '.jar' }
 loom { runs { client { programArgs '--username', 'FriendsWineQA' }; server { programArgs '--nogui' } } }

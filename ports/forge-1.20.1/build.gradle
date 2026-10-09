@@ -9,13 +9,21 @@ minecraft { mappings channel:'official',version:'1.20.1'
  gameTestServer { workingDirectory project.file('run-gametest'); property 'forge.enabledGameTestNamespaces','friendswine'; mods { friendswine { source sourceSets.main } } } }
 }
 repositories { maven { url='https://repo.spongepowered.org/repository/maven-public/' } }
-dependencies { minecraft 'net.minecraftforge:forge:1.20.1-47.4.23'; annotationProcessor 'org.spongepowered:mixin:0.8.5:processor' }
+dependencies { minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"; annotationProcessor 'org.spongepowered:mixin:0.8.5:processor' }
 mixin { add sourceSets.main,'friendswine.refmap.json'; config 'friendswine.mixins.json' }
 tasks.withType(JavaCompile).configureEach { options.encoding='UTF-8' }
 compileJava.source file('../../mod/src/main/java/com/friendswine/JellyAnimation.java')
 compileJava.source file('../../mod/src/main/java/com/friendswine/GuestAnimation.java')
 sourceSets.main.resources.srcDir('../../mod/src/main/resources')
-processResources { duplicatesStrategy=DuplicatesStrategy.EXCLUDE; exclude 'data/friendswine/loot_table/**' }
+processResources {
+    filteringCharset = 'UTF-8'
+    inputs.property 'version', mod_version
+    inputs.property 'forge_min_version', forge_min_version
+    duplicatesStrategy=DuplicatesStrategy.EXCLUDE
+    exclude 'data/friendswine/loot_table/**'
+    // 由工程属性展开版本和运行时下限，成品不保留模板占位符。
+    filesMatching('META-INF/mods.toml') { expand(version: mod_version, forge_min_version: forge_min_version) }
+}
 jar { archiveFileName='friendswine-'+mod_version+'-Forge-1.20.1.jar'; manifest { attributes(['MixinConfigs':'friendswine.mixins.json']) }; finalizedBy 'reobfJar' }
 
 jar { exclude 'com/friendswine/*GameTests*.class'; exclude 'data/friendswine/structure/**'; exclude 'data/friendswine/structures/**' }

@@ -26,7 +26,7 @@
     "friendswine.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.19.4",
+    "fabricloader": ">=${loader_min_version}",
     "minecraft": "1.20.1",
     "java": ">=17",
     "fabric-api": ">=0.92.9+1.20.1"
