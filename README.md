@@ -7,11 +7,13 @@ Minecraft Java 模组，模组 ID 为 `friendswine`，当前源码版本 **0.1.1
 - 玩偶：右键开始循环音乐、果冻回弹与自转，再次右键停止。音乐每约 56.294 秒循环，播放状态随玩偶保存。
 - 遥控器：右键玩偶绑定，对空气使用依次切换「回弹 → 加入自转 → 加入生物绕圈 → 停止」。切档保留音乐进度，不强制加载目标区块。
 - 朋友的酒：饮用后获得约 168.9 秒酒劲，人物果冻回弹，有酒劲时三个视角的镜头同步回弹；牛奶可解除。
-- 活动玩偶吸引 50 格内生物，音乐范围 20 格、视觉效果范围 10 格。玩家保留移动控制，形变不改变碰撞箱。
-- 户山香澄与艾玛：稀有自然生成，可使用生成蛋。遥控器进入第三档时尝试生成，随机目标为 2～4 只，受 16 格内两种生物合计最多 4 只的限制；普通播放、NPC 放置及存档恢复不触发生成。
-- 成年傻子村民通过原版交易窗口提供玩偶、遥控器和酒，每项每日 16 次库存；玩家共享库存，按游戏日期补货。
+- 活动玩偶使 50 格内生物寻路靠近，10 格内平滑吸引，并在水平 5 格范围内分散站位或绕圈。音乐范围 20 格、视觉效果范围 10 格；玩家保留移动控制，形变不改变碰撞箱。
+- 播放区域会抑制生物对玩家或其他生物的攻击：攻击者或受击者在玩偶 50 格内即可生效。苦力怕爆炸、玩家主动攻击与环境伤害保持原版规则。
+- 户山香澄与艾玛：稀有自然生成，可使用生成蛋。遥控器进入第三档时尝试追加生成，随机目标为 2～4 只，并按 16 格内两种生物合计 4 只的上限裁减。自然生成和生成蛋产生的已有个体也计入数量；此上限只限制玩偶追加生成。普通播放、NPC 放置及存档恢复不触发生成。
+- 两种生物在 50 格内没有播放中的玩偶时，会靠近手持玩偶的生存或冒险玩家，取走一件并尝试在附近安全位置放置、开启。取走与放置行为受生物破坏游戏规则控制；死亡会掉落仍携带的玩偶。
+- 成年傻子村民通过原版交易窗口出售，基础价格为：玩偶 8 个绿宝石，遥控器 4 个绿宝石，酒 16 个小麦和 1 个玻璃瓶。每项每日 16 次库存；同一村民的库存由玩家共享，按游戏日期补货。
 
-创造页「朋友的酒」中可取得全部物品，也可使用 `/give @s friendswine:doll`、`friendswine:remote`、`friendswine:wine`、`friendswine:kasumi_spawn_egg`、`friendswine:emma_spawn_egg`。没有合成或酿造配方。多人游戏的客户端与服务器需安装相同目标版本。
+创造页「朋友的酒」中可取得全部物品，也可通过 `/give @s friendswine:<物品ID>` 获取；物品 ID 为 `doll`、`remote`、`wine`、`kasumi_spawn_egg`、`emma_spawn_egg`。没有合成或酿造配方。多人游戏的客户端与服务器需安装相同目标版本。
 
 ## 六版本工程
 
@@ -23,6 +25,14 @@ Minecraft Java 模组，模组 ID 为 `friendswine`，当前源码版本 **0.1.1
 | 1.21.1 | Fabric | 0.15.11 | `ports/fabric-1.21.1` | 21 | 21 |
 | 26.1.2 | NeoForge | 26.1.2.71 | `ports/neoforge-26.1.2` | 25 | 25 |
 | 26.1.2 | Fabric | 0.18.4 | `ports/fabric-26.1.2` | 25 | 25 |
+
+Fabric 版本还需安装对应 Minecraft 版本的 Fabric API，最低要求为：
+
+- 1.20.1：`0.92.9+1.20.1`
+- 1.21.1：`0.116.7+1.21.1`
+- 26.1.2：`0.149.0+26.1.2`
+
+Mod Menu 为 Fabric 客户端的可选依赖，安装后可从模组列表进入设置界面。
 
 五个移植工程直接引用 `mod` 中的 `JellyAnimation.java`、`GuestAnimation.java` 和生产资源。请克隆完整仓库并保留目录布局，不要单独移动某个移植工程。加载器、API、插件和 Gradle 版本固定在各工程配置中。
 
@@ -56,13 +66,24 @@ Forge／NeoForge 的编译版本与运行时下限分别配置。GameTest 使用
 & .\ports\fabric-26.1.2\gradlew.bat -p .\ports\fabric-26.1.2 build
 ```
 
-Fabric 的 `build` 已包含 GameTest；Forge／NeoForge 显式执行 `runGameTestServer`。GameTest 服务端使用测试运行目录，请勿放入实际游玩存档。Linux／macOS 将 Wrapper 改为 `./对应目录/gradlew`，路径使用 `/`。
+Fabric 的 `build` 已包含 GameTest；Forge／NeoForge 显式执行 `runGameTestServer`。GameTest 服务端使用测试运行目录，请勿放入实际游玩存档。
+
+Linux／macOS 使用 `gradlew`，保留 `-p` 指定工程目录，并按上表设置 JDK。例如从仓库根目录构建和测试 Forge 1.20.1：
+
+```bash
+./ports/forge-1.20.1/gradlew -p ./ports/forge-1.20.1 build runGameTestServer
+```
 
 完成回归测试后，按对应 JDK 构建三个原生加载器的兼容成品：
 
 ```powershell
+# Forge 1.20.1：JAVA_HOME 指向 JDK 17
 & .\ports\forge-1.20.1\gradlew.bat -p .\ports\forge-1.20.1 -Pforge_version=47.0.0 build
+
+# NeoForge 1.21.1：JAVA_HOME 指向 JDK 21
 & .\mod\gradlew.bat -p .\mod -Pneo_version=21.1.1 build
+
+# NeoForge 26.1.2：JAVA_HOME 指向 JDK 25
 & .\ports\neoforge-26.1.2\gradlew.bat -p .\ports\neoforge-26.1.2 -Pneo_version=26.1.2.71 build
 ```
 
@@ -74,7 +95,7 @@ Fabric 的 `build` 已包含 GameTest；Forge／NeoForge 显式执行 `runGameTe
 - [户山香澄 PNG／GIF](assets/guests/kasumi/)与[艾玛 PNG／GIF](assets/guests/emma/)。
 - 生产资源位于 `mod/src/main/resources/`，构建直接使用已提交资源，不要求安装素材处理工具。
 
-发布模型移除了旧电脑的贴图文件路径和外部参考图引用；模型网格、嵌入贴图和动画保持原内容。
+仓库中的模型保留原网格、嵌入贴图和动画，已去除对外部文件的引用。
 
 使用 Python 3 和 Pillow 重建两种生物图集：
 
