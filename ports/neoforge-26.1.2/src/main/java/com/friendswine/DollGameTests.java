@@ -434,7 +434,13 @@ public final class DollGameTests {
                     "Reloading resumes physical orbit");
             doll.cycleRemote(); PartyGuestGameTests.clean(helper);
             helper.assertFalse(doll.isPlaying(), "Fourth phase stops orbit");
-            for (Mob mob : mobs) { helper.assertTrue(mob.getNavigation().isDone(), "Stop releases navigation"); mob.setDeltaMovement(Vec3.ZERO); }
+            // 停止后分开测试实体，排除新追加生物或轨道同伴碰撞留下的推力；仍在玩偶作用范围内验证解除牵引。
+            for (int i = 0; i < mobs.length; i++) {
+                Mob mob = mobs[i];
+                helper.assertTrue(mob.getNavigation().isDone(), "Stop releases navigation");
+                mob.setPos(center.x + (i % 3 - 1) * 3, center.y - 0.5, center.z + (i / 3 * 6 - 3));
+                mob.setDeltaMovement(Vec3.ZERO);
+            }
         }).thenIdle(5).thenExecute(() -> {
             for (Mob mob : mobs) helper.assertTrue(mob.getDeltaMovement().horizontalDistanceSqr() < 1e-8, "Stopped orbit applies no force");
             doll.startPlaying(); PartyGuestGameTests.clean(helper);

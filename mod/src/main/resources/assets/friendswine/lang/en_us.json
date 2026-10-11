@@ -40,5 +40,13 @@
   "friendswine.settings.invalidRange": "Squash 0–90; width 0–200; rotation / orbit 0–4",
   "friendswine.settings.invalidCreatureRange": "Creature scales must be 0.5–20 and minimum ≤ maximum",
   "friendswine.settings.invalidNumber": "Enter a valid number",
-  "friendswine.settings.saveFailed": "Cannot save settings. Check the configuration directory."
+  "friendswine.settings.saveFailed": "Cannot save settings. Check the configuration directory.",
+  "entity.friendswine.amiya": "Amiya",
+  "item.friendswine.amiya_spawn_egg": "Amiya Spawn Egg",
+  "friendswine.config.amiyaMinScale": "Amiya minimum display scale",
+  "friendswine.config.amiyaMaxScale": "Amiya maximum display scale",
+  "friendswine.config.amiyaMinScale.tooltip": "0.5–20, default 0.75. Cannot exceed Amiya's maximum. Local display only; pulses to doll music without changing the hitbox.",
+  "friendswine.config.amiyaMaxScale.tooltip": "0.5–20, default 1.25. Cannot be below Amiya's minimum. Local display only; reversed ranges reset to defaults.",
+  "friendswine.settings.amiyaPage": "Amiya size",
+  "subtitles.friendswine.guest_steal": "Guest steals a doll"
 }

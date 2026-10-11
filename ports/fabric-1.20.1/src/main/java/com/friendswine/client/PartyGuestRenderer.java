@@ -4,6 +4,7 @@ import com.friendswine.ClientConfig;
 import com.friendswine.DollBlockEntity;
 import com.friendswine.FriendsWine;
 import com.friendswine.GuestAnimation;
+import com.friendswine.GuestVariant;
 import com.friendswine.PartyGuestEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -17,10 +18,10 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.AABB;
 
-/** A feet-anchored, two-sided image plane facing this client's camera, remaining upright. */
+/** 角色立板朝向本机摄像机；携带玩偶复用同一朝向、缩放和现有立体模型。 */
 public final class PartyGuestRenderer extends EntityRenderer<PartyGuestEntity> {
-    private static final ResourceLocation[] IDLE = {texture("kasumi", "idle"), texture("emma", "idle")};
-    private static final ResourceLocation[] DANCE = {texture("kasumi", "dance"), texture("emma", "dance")};
+    private static final ResourceLocation[] IDLE = {texture("kasumi", "idle"), texture("emma", "idle"), texture("amiya", "idle")};
+    private static final ResourceLocation[] DANCE = {texture("kasumi", "dance"), texture("emma", "dance"), texture("amiya", "dance")};
 
     public PartyGuestRenderer(EntityRendererProvider.Context context) { super(context); shadowRadius = 0.3F; }
     private static ResourceLocation texture(String name, String state) {
@@ -28,12 +29,12 @@ public final class PartyGuestRenderer extends EntityRenderer<PartyGuestEntity> {
     }
 
     @Override public ResourceLocation getTextureLocation(PartyGuestEntity entity) {
-        boolean emma = entity.getType() == FriendsWine.EMMA.get();
-        return DollBlockEntity.nearestActive(entity.level(), entity.position(), 20) == null ? IDLE[emma ? 1 : 0] : DANCE[emma ? 1 : 0];
+        GuestVariant variant = entity.variant();
+        return DollBlockEntity.nearestActive(entity.level(), entity.position(), 20) == null ? IDLE[variant.ordinal()] : DANCE[variant.ordinal()];
     }
 
     @Override public boolean shouldRender(PartyGuestEntity entity, Frustum frustum, double camX, double camY, double camZ) {
-        double size = Math.max(1, ClientConfig.creatureMax(entity.getType() == FriendsWine.EMMA.get()));
+        double size = Math.max(1, ClientConfig.creatureMax(entity.variant()));
         AABB bounds = new AABB(entity.getX() - size / 2, entity.getY(), entity.getZ() - size / 2,
                 entity.getX() + size / 2, entity.getY() + size, entity.getZ() + size / 2);
         return entity.distanceToSqr(camX, camY, camZ) <= (128 + size) * (128 + size) && frustum.isVisible(bounds.inflate(0.5));
@@ -41,28 +42,36 @@ public final class PartyGuestRenderer extends EntityRenderer<PartyGuestEntity> {
 
     @Override public void render(PartyGuestEntity entity, float yaw, float partialTick, PoseStack pose, MultiBufferSource buffers, int light) {
         if (!entity.isInvisible()) {
-            boolean emma = entity.getType() == FriendsWine.EMMA.get();
+            GuestVariant variant = entity.variant();
             DollBlockEntity doll = DollBlockEntity.nearestActive(entity.level(), entity.position(), 20);
             boolean dancing = doll != null;
             double seconds = dancing ? (doll.getElapsedTicks(entity.level().getGameTime()) + partialTick) / 20.0 : 0;
-            int frame = dancing ? GuestAnimation.frame(emma, seconds) : 0;
-            int columns = dancing ? GuestAnimation.columns(emma) : 1;
-            int rows = dancing ? GuestAnimation.rows(emma) : 1;
+            int frame = dancing ? GuestAnimation.frame(variant, seconds) : 0;
+            int columns = dancing ? GuestAnimation.columns(variant) : 1;
+            int rows = dancing ? GuestAnimation.rows(variant) : 1;
             float u0 = (float) (frame % columns) / columns, v0 = (float) (frame / columns) / rows;
             float u1 = u0 + 1F / columns, v1 = v0 + 1F / rows;
-            float scale = dancing ? GuestAnimation.scale(seconds, ClientConfig.creatureMin(emma), ClientConfig.creatureMax(emma)) : 1;
-            float halfWidth = GuestAnimation.aspect(emma, dancing) / 2;
+            float scale = dancing ? GuestAnimation.scale(seconds, ClientConfig.creatureMin(variant), ClientConfig.creatureMax(variant)) : 1;
+            float halfWidth = GuestAnimation.aspect(variant, dancing) / 2;
             pose.pushPose();
             var camera = entityRenderDispatcher.camera;
             var position = entity.getPosition(partialTick);
             var eye = camera.getPosition();
             pose.mulPose(Axis.YP.rotationDegrees(GuestAnimation.facingYaw(eye.x - position.x, eye.z - position.z, camera.getYRot())));
             pose.scale(scale, scale, scale);
-            VertexConsumer consumer = buffers.getBuffer(RenderType.entityTranslucent(dancing ? DANCE[emma ? 1 : 0] : IDLE[emma ? 1 : 0]));
+            VertexConsumer consumer = buffers.getBuffer(RenderType.entityTranslucent(dancing ? DANCE[variant.ordinal()] : IDLE[variant.ordinal()]));
             vertex(consumer, pose.last(), -halfWidth, 0, u0, v1, light);
             vertex(consumer, pose.last(), halfWidth, 0, u1, v1, light);
             vertex(consumer, pose.last(), halfWidth, 1, u1, v0, light);
             vertex(consumer, pose.last(), -halfWidth, 1, u0, v0, light);
+            if (entity.isCarryingDoll()) {
+                // shortcut: 使用固定手边挂点，不追踪 GIF 手部；需要精确握持时改为逐帧挂点。
+                pose.pushPose();
+                pose.translate(variant.handX, variant.handY, 0.15);
+                pose.scale(0.3F, 0.3F, 0.3F);
+                DollRenderer.draw(pose, buffers, light, OverlayTexture.NO_OVERLAY);
+                pose.popPose();
+            }
             pose.popPose();
         }
         super.render(entity, yaw, partialTick, pose, buffers, light);

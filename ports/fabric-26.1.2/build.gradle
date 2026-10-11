@@ -15,6 +15,7 @@ java { toolchain.languageVersion = JavaLanguageVersion.of(25) }
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
 compileJava.source file('../../mod/src/main/java/com/friendswine/JellyAnimation.java')
 compileJava.source file('../../mod/src/main/java/com/friendswine/GuestAnimation.java')
+compileJava.source file('../../mod/src/main/java/com/friendswine/GuestVariant.java')
 sourceSets.main.resources.srcDir('../../mod/src/main/resources')
 processResources {
     inputs.property 'version', mod_version

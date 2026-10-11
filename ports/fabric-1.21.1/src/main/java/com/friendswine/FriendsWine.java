@@ -27,6 +27,7 @@ public final class FriendsWine implements ModInitializer {
         Registry.register(registry, ResourceLocation.fromNamespaceAndPath(MODID,id),value);
         return () -> value;
     }
+    public static final Supplier<net.minecraft.sounds.SoundEvent> GUEST_STEAL = register(BuiltInRegistries.SOUND_EVENT, "guest_steal", net.minecraft.sounds.SoundEvent.createVariableRangeEvent(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(MODID, "guest_steal")));
     public static final Supplier<DollBlock> DOLL = register(BuiltInRegistries.BLOCK,"doll",new DollBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).strength(0.5F).sound(SoundType.WOOL).noOcclusion()));
     public static final Supplier<BlockItem> DOLL_ITEM = register(BuiltInRegistries.ITEM,"doll",new BlockItem(DOLL.get(),new Item.Properties()));
     public static final Supplier<RemoteItem> REMOTE = register(BuiltInRegistries.ITEM,"remote",new RemoteItem(new Item.Properties().stacksTo(1)));
@@ -38,15 +39,18 @@ public final class FriendsWine implements ModInitializer {
     }
     public static final Supplier<EntityType<PartyGuestEntity>> KASUMI = register(BuiltInRegistries.ENTITY_TYPE, "kasumi", guestType());
     public static final Supplier<EntityType<PartyGuestEntity>> EMMA = register(BuiltInRegistries.ENTITY_TYPE, "emma", guestType());
+    public static final Supplier<EntityType<PartyGuestEntity>> AMIYA = register(BuiltInRegistries.ENTITY_TYPE, "amiya", guestType());
     public static final Supplier<SpawnEggItem> KASUMI_SPAWN_EGG = register(BuiltInRegistries.ITEM, "kasumi_spawn_egg", new SpawnEggItem(KASUMI.get(), 0x70543B, 0xE99334, new Item.Properties()));
     public static final Supplier<SpawnEggItem> EMMA_SPAWN_EGG = register(BuiltInRegistries.ITEM, "emma_spawn_egg", new SpawnEggItem(EMMA.get(), 0xECE7F5, 0xE67DAB, new Item.Properties()));
+    public static final Supplier<SpawnEggItem> AMIYA_SPAWN_EGG = register(BuiltInRegistries.ITEM, "amiya_spawn_egg", new SpawnEggItem(AMIYA.get(), 0x92735F, 0x71DDE7, new Item.Properties()));
     public static final Supplier<CreativeModeTab> TAB = register(BuiltInRegistries.CREATIVE_MODE_TAB,"main",FabricItemGroup.builder().title(Component.translatable("itemGroup.friendswine")).icon(() -> new ItemStack(DOLL_ITEM.get())).displayItems((parameters,output) -> {
-        output.accept(DOLL_ITEM.get());output.accept(REMOTE.get());output.accept(WINE.get());output.accept(KASUMI_SPAWN_EGG.get());output.accept(EMMA_SPAWN_EGG.get());
+        output.accept(DOLL_ITEM.get());output.accept(REMOTE.get());output.accept(WINE.get());output.accept(KASUMI_SPAWN_EGG.get());output.accept(EMMA_SPAWN_EGG.get());output.accept(AMIYA_SPAWN_EGG.get());
     }).build());
     @Override public void onInitialize() {
         ServerConfig.load();
         net.fabricmc.fabric.api.biome.v1.BiomeModifications.addSpawn(net.fabricmc.fabric.api.biome.v1.BiomeSelectors.foundInOverworld(), MobCategory.CREATURE, KASUMI.get(), 1, 1, 1);
         net.fabricmc.fabric.api.biome.v1.BiomeModifications.addSpawn(net.fabricmc.fabric.api.biome.v1.BiomeSelectors.foundInOverworld(), MobCategory.CREATURE, EMMA.get(), 1, 1, 1);
+        net.fabricmc.fabric.api.biome.v1.BiomeModifications.addSpawn(net.fabricmc.fabric.api.biome.v1.BiomeSelectors.foundInOverworld(), MobCategory.CREATURE, AMIYA.get(), 1, 1, 1);
         ServerTickEvents.END_WORLD_TICK.register(level -> { DollAttraction.tick(level); level.players().forEach(TipsySync::tick); });
         ServerWorldEvents.UNLOAD.register((server,level) -> { DollBlockEntity.forgetLevel(level); DollAttraction.releaseLevel(level); });
         EntityTrackingEvents.START_TRACKING.register((entity,player) -> TipsySync.startTracking(player,entity));

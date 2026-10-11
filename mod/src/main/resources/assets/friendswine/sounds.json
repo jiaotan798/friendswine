@@ -8,5 +8,14 @@
         "attenuation_distance": 20
       }
     ]
+  },
+  "guest_steal": {
+    "subtitle": "subtitles.friendswine.guest_steal",
+    "sounds": [
+      {
+        "name": "friendswine:guest_steal",
+        "attenuation_distance": 16
+      }
+    ]
   }
 }

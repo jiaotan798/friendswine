@@ -9,6 +9,13 @@ import shutil
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT_ROOT = ROOT / "mod/src/main/resources/assets/friendswine/textures/entity"
 INPUTS = {
+    "amiya": (
+        ROOT / "assets/guests/amiya/idle.png",
+        ROOT / "assets/guests/amiya/dance.gif",
+        # 阿米娅原 GIF 为 27 帧，每帧 100 毫秒；第一帧用作静态图，保留透明画布。
+        [100] * 27,
+        6,
+    ),
     "kasumi": (
         ROOT / "assets/guests/kasumi/idle.png",
         ROOT / "assets/guests/kasumi/dance.gif",
@@ -57,6 +64,9 @@ def prepare(name, png, gif, expected, columns, output_root=OUTPUT_ROOT):
             x, y = (i % columns) * width, (i // columns) * height
             assert encoded.crop((x, y, x + width, y + height)).tobytes() == frame.tobytes()
     with Image.open(png) as idle:
+        if name == "amiya":
+            # 阿米娅静态资源必须就是原 GIF 首帧，连透明区域的 RGB 值也保留。
+            assert idle.convert("RGBA").tobytes() == frames[0].tobytes()
         idle_bounds = list(idle.convert("RGBA").getchannel("A").getbbox())
         idle_size = list(idle.size)
     descriptor = {

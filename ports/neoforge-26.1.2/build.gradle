@@ -196,5 +196,6 @@ idea {
 
 compileJava.source file('../../mod/src/main/java/com/friendswine/JellyAnimation.java')
 compileJava.source file('../../mod/src/main/java/com/friendswine/GuestAnimation.java')
+compileJava.source file('../../mod/src/main/java/com/friendswine/GuestVariant.java')
 sourceSets.main.resources.srcDir('../../mod/src/main/resources')
 processResources { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
