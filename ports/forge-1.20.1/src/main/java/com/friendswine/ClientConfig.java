@@ -2,7 +2,7 @@ package com.friendswine;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 
-/** Local display preferences; server gameplay and synchronized clocks do not use these values. */
+/** 三种角色各自的本地显示设置；不改变服务端行为与音乐时钟。 */
 public final class ClientConfig {
     public static final ForgeConfigSpec SPEC;
     public static final ForgeConfigSpec.IntValue COMPRESSION;
@@ -11,7 +11,9 @@ public final class ClientConfig {
     public static final ForgeConfigSpec.ConfigValue<Number> KASUMI_MIN_SCALE;
     public static final ForgeConfigSpec.ConfigValue<Number> KASUMI_MAX_SCALE;
     public static final ForgeConfigSpec.ConfigValue<Number> EMMA_MIN_SCALE;
+    public static final ForgeConfigSpec.ConfigValue<Number> AMIYA_MIN_SCALE;
     public static final ForgeConfigSpec.ConfigValue<Number> EMMA_MAX_SCALE;
+    public static final ForgeConfigSpec.ConfigValue<Number> AMIYA_MAX_SCALE;
 
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -27,6 +29,8 @@ public final class ClientConfig {
         KASUMI_MAX_SCALE = scale(builder,"kasumiMaxScale",1.25);
         EMMA_MIN_SCALE = scale(builder,"emmaMinScale",0.75);
         EMMA_MAX_SCALE = scale(builder,"emmaMaxScale",1.25);
+        AMIYA_MIN_SCALE = scale(builder,"amiyaMinScale",0.75);
+        AMIYA_MAX_SCALE = scale(builder,"amiyaMaxScale",1.25);
         // Native numeric Range.correct leaves NaN untouched; finite-value validators reset invalid values.
         SPEC = builder.build();
     }
@@ -36,33 +40,44 @@ public final class ClientConfig {
                         value -> value instanceof Number n && Double.isFinite(n.doubleValue()) && n.doubleValue()>=0.5 && n.doubleValue()<=20);
     }
     private ClientConfig() {}
-    private static double creatureScale(boolean emma,boolean maximum) {
-        var min=emma ? EMMA_MIN_SCALE : KASUMI_MIN_SCALE;
-        var max=emma ? EMMA_MAX_SCALE : KASUMI_MAX_SCALE;
+    private static double creatureScale(GuestVariant variant,boolean maximum) {
+        var min=switch (variant) { case KASUMI -> KASUMI_MIN_SCALE; case EMMA -> EMMA_MIN_SCALE; case AMIYA -> AMIYA_MIN_SCALE; };
+        var max=switch (variant) { case KASUMI -> KASUMI_MAX_SCALE; case EMMA -> EMMA_MAX_SCALE; case AMIYA -> AMIYA_MAX_SCALE; };
         double minimum=min.get().doubleValue(), limit=max.get().doubleValue();
-        // Native config screens edit entries independently. Enforce pair order on every load/reload read.
+        // 原生界面逐项修改配置；读取时成对校验，倒置的范围恢复默认值并保存。
         if (!validPair(minimum,limit)) {
             min.set(0.75); max.set(1.25); SPEC.save();
             minimum=0.75; limit=1.25;
         }
         return maximum ? limit : minimum;
     }
-    public static double creatureMin(boolean emma) { return creatureScale(emma,false); }
-    public static double creatureMax(boolean emma) { return creatureScale(emma,true); }
+    public static double creatureMin(GuestVariant variant) { return creatureScale(variant,false); }
+    public static double creatureMax(GuestVariant variant) { return creatureScale(variant,true); }
+    public static double creatureMin(boolean emma) { return creatureScale(emma ? GuestVariant.EMMA : GuestVariant.KASUMI,false); }
+    public static double creatureMax(boolean emma) { return creatureScale(emma ? GuestVariant.EMMA : GuestVariant.KASUMI,true); }
     public static void save(int compression,int width,double rotation) {
         save(compression,width,rotation,creatureMin(false),creatureMax(false),creatureMin(true),creatureMax(true));
     }
     public static void save(int compression,int width,double rotation,double kasumiMin,double kasumiMax,double emmaMin,double emmaMax) {
+        // 旧调用只更新原有选项，不能把新增角色的已有配置重置为默认值。
+        save(compression,width,rotation,kasumiMin,kasumiMax,emmaMin,emmaMax,creatureMin(GuestVariant.AMIYA),creatureMax(GuestVariant.AMIYA));
+    }
+    /** 校验三组独立大小后一起保存；失败时不会部分写入配置。 */
+    public static void save(int compression,int width,double rotation,double kasumiMin,double kasumiMax,double emmaMin,double emmaMax,double amiyaMin,double amiyaMax) {
         if(compression<0||compression>90||width<0||width>200||!Double.isFinite(rotation)||rotation<0||rotation>4) throw new IllegalArgumentException("Invalid client settings");
         requireCreatureScales(kasumiMin,kasumiMax,emmaMin,emmaMax);
+        if (!validPair(amiyaMin,amiyaMax)) throw new IllegalArgumentException("Invalid Amiya scales");
         COMPRESSION.set(compression); WIDTH.set(width); ROTATION_SPEED.set(rotation);
-        KASUMI_MIN_SCALE.set(kasumiMin); KASUMI_MAX_SCALE.set(kasumiMax); EMMA_MIN_SCALE.set(emmaMin); EMMA_MAX_SCALE.set(emmaMax);
+        KASUMI_MIN_SCALE.set(kasumiMin); KASUMI_MAX_SCALE.set(kasumiMax); EMMA_MIN_SCALE.set(emmaMin); EMMA_MAX_SCALE.set(emmaMax); AMIYA_MIN_SCALE.set(amiyaMin); AMIYA_MAX_SCALE.set(amiyaMax);
         SPEC.save();
     }
     public static float heightScale(float squash) { return JellyAnimation.heightScale(squash, COMPRESSION.get()); }
 
     public static boolean validCreatureScales(double kasumiMin,double kasumiMax,double emmaMin,double emmaMax) {
         return validPair(kasumiMin,kasumiMax) && validPair(emmaMin,emmaMax);
+    }
+    public static boolean validCreatureScales(double kasumiMin,double kasumiMax,double emmaMin,double emmaMax,double amiyaMin,double amiyaMax) {
+        return validCreatureScales(kasumiMin,kasumiMax,emmaMin,emmaMax) && validPair(amiyaMin,amiyaMax);
     }
     private static boolean validPair(double min,double max) {
         return Double.isFinite(min) && Double.isFinite(max) && min>=0.5 && max<=20 && min<=max;
@@ -71,6 +86,9 @@ public final class ClientConfig {
         if (!validCreatureScales(kasumiMin,kasumiMax,emmaMin,emmaMax)) throw new IllegalArgumentException("Creature scales must be 0.5 to 20, with minimum <= maximum");
     }
     private static void checkCreatureScaleLimits() {
+        assert validCreatureScales(0.75,1.25,0.75,1.25,0.5,20);
+        assert !validCreatureScales(0.75,1.25,0.75,1.25,2,1);
+        assert !validCreatureScales(0.75,1.25,0.75,1.25,Double.NaN,20);
         assert validCreatureScales(0.75,1.25,0.75,1.25);
         assert validCreatureScales(0.5,20,20,20);
         assert !validCreatureScales(1.25,0.75,0.75,1.25);
@@ -81,7 +99,7 @@ public final class ClientConfig {
         assert !validCreatureScales(0.75,Double.POSITIVE_INFINITY,0.75,1.25);
     }
 
-    /** Run with -ea. Checks native defaults, range correction and both scale-pair boundaries. */
+    /** 用 -ea 验证原生配置默认值、三组边界和旧配置迁移。 */
     public static void main(String[] args) {
         checkCreatureScaleLimits();
         var config = com.electronwill.nightconfig.core.CommentedConfig.inMemory();
@@ -90,8 +108,14 @@ public final class ClientConfig {
         assert COMPRESSION.getDefault() == 50 && WIDTH.getDefault() == 50 && ROTATION_SPEED.getDefault().doubleValue() == 1.0;
         assert KASUMI_MIN_SCALE.getDefault().doubleValue()==0.75 && KASUMI_MAX_SCALE.getDefault().doubleValue()==1.25;
         assert EMMA_MIN_SCALE.getDefault().doubleValue()==0.75 && EMMA_MAX_SCALE.getDefault().doubleValue()==1.25;
+        // 模拟旧配置缺少阿米娅字段，原有自定义值不能被新增默认值覆盖。
+        config.remove("amiyaMinScale"); config.remove("amiyaMaxScale");
+        config.set("kasumiMinScale",0.6); config.set("emmaMaxScale",2.0);
+        SPEC.correct(config);
+        assert config.<Number>get("kasumiMinScale").doubleValue()==0.6 && config.<Number>get("emmaMaxScale").doubleValue()==2.0;
+        assert config.<Number>get("amiyaMinScale").doubleValue()==0.75 && config.<Number>get("amiyaMaxScale").doubleValue()==1.25;
         config.set("compressionPercent", 90); config.set("widthPercent", 200); config.set("rotationSpeed", 4.0);
-        for (String key : new String[] {"kasumiMinScale","kasumiMaxScale","emmaMinScale","emmaMaxScale"}) {
+        for (String key : new String[] {"kasumiMinScale","kasumiMaxScale","emmaMinScale","emmaMaxScale","amiyaMinScale","amiyaMaxScale"}) {
             config.set(key,0.5); assert SPEC.isCorrect(config);
             config.set(key,20.0); assert SPEC.isCorrect(config);
             for (double invalid : new double[] {0.49,20.01,Double.NaN,Double.POSITIVE_INFINITY}) {

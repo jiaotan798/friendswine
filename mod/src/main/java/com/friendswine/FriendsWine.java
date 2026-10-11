@@ -31,6 +31,8 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 @Mod(FriendsWine.MODID)
 public final class FriendsWine {
     public static final String MODID = "friendswine";
+    private static final DeferredRegister<net.minecraft.sounds.SoundEvent> SOUNDS = DeferredRegister.create(Registries.SOUND_EVENT, MODID);
+    public static final DeferredHolder<net.minecraft.sounds.SoundEvent, net.minecraft.sounds.SoundEvent> GUEST_STEAL = SOUNDS.register("guest_steal", () -> net.minecraft.sounds.SoundEvent.createVariableRangeEvent(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(MODID, "guest_steal")));
     private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);
     private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
     private static final DeferredRegister<MobEffect> EFFECTS = DeferredRegister.create(Registries.MOB_EFFECT, MODID);
@@ -51,8 +53,10 @@ public final class FriendsWine {
     private static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(Registries.ENTITY_TYPE, MODID);
     public static final DeferredHolder<EntityType<?>, EntityType<PartyGuestEntity>> KASUMI = ENTITIES.register("kasumi", () -> EntityType.Builder.<PartyGuestEntity>of(PartyGuestEntity::new, MobCategory.CREATURE).sized(0.6F, 1.0F).clientTrackingRange(10).build(MODID + ":kasumi"));
     public static final DeferredHolder<EntityType<?>, EntityType<PartyGuestEntity>> EMMA = ENTITIES.register("emma", () -> EntityType.Builder.<PartyGuestEntity>of(PartyGuestEntity::new, MobCategory.CREATURE).sized(0.6F, 1.0F).clientTrackingRange(10).build(MODID + ":emma"));
+    public static final DeferredHolder<EntityType<?>, EntityType<PartyGuestEntity>> AMIYA = ENTITIES.register("amiya", () -> EntityType.Builder.<PartyGuestEntity>of(PartyGuestEntity::new, MobCategory.CREATURE).sized(0.6F, 1.0F).clientTrackingRange(10).build(MODID + ":amiya"));
     public static final DeferredItem<net.neoforged.neoforge.common.DeferredSpawnEggItem> KASUMI_SPAWN_EGG = ITEMS.register("kasumi_spawn_egg", () -> new net.neoforged.neoforge.common.DeferredSpawnEggItem(KASUMI, 0x70543B, 0xE99334, new Item.Properties()));
     public static final DeferredItem<net.neoforged.neoforge.common.DeferredSpawnEggItem> EMMA_SPAWN_EGG = ITEMS.register("emma_spawn_egg", () -> new net.neoforged.neoforge.common.DeferredSpawnEggItem(EMMA, 0xECE7F5, 0xE67DAB, new Item.Properties()));
+    public static final DeferredItem<net.neoforged.neoforge.common.DeferredSpawnEggItem> AMIYA_SPAWN_EGG = ITEMS.register("amiya_spawn_egg", () -> new net.neoforged.neoforge.common.DeferredSpawnEggItem(AMIYA, 0x92735F, 0x71DDE7, new Item.Properties()));
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = TABS.register("main", () ->
             CreativeModeTab.builder().title(Component.translatable("itemGroup.friendswine"))
                     .icon(() -> new ItemStack(DOLL_ITEM.get()))
@@ -61,7 +65,7 @@ public final class FriendsWine {
                         output.accept(REMOTE);
                         output.accept(WINE);
                         output.accept(KASUMI_SPAWN_EGG);
-                        output.accept(EMMA_SPAWN_EGG);
+                        output.accept(EMMA_SPAWN_EGG);output.accept(AMIYA_SPAWN_EGG);
                     }).build());
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<DollBlockEntity>> DOLL_BLOCK_ENTITY =
             BLOCK_ENTITIES.register("doll", () -> BlockEntityType.Builder.of(DollBlockEntity::new, DOLL.get()).build(null));
@@ -72,11 +76,12 @@ public final class FriendsWine {
         BLOCKS.register(modBus);
         ITEMS.register(modBus);
         EFFECTS.register(modBus);
+        SOUNDS.register(modBus);
         TABS.register(modBus);
         BLOCK_ENTITIES.register(modBus);
         ENTITIES.register(modBus);
-        modBus.addListener((net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent event) -> { event.put(KASUMI.get(), PartyGuestEntity.createAttributes().build()); event.put(EMMA.get(), PartyGuestEntity.createAttributes().build()); });
-        modBus.addListener((net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent event) -> { event.register(KASUMI.get(), net.minecraft.world.entity.SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, PartyGuestEntity::checkNaturalSpawn, net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent.Operation.REPLACE); event.register(EMMA.get(), net.minecraft.world.entity.SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, PartyGuestEntity::checkNaturalSpawn, net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent.Operation.REPLACE); });
+        modBus.addListener((net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent event) -> { event.put(KASUMI.get(), PartyGuestEntity.createAttributes().build()); event.put(EMMA.get(), PartyGuestEntity.createAttributes().build()); event.put(AMIYA.get(), PartyGuestEntity.createAttributes().build()); });
+        modBus.addListener((net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent event) -> { event.register(KASUMI.get(), net.minecraft.world.entity.SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, PartyGuestEntity::checkNaturalSpawn, net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent.Operation.REPLACE); event.register(EMMA.get(), net.minecraft.world.entity.SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, PartyGuestEntity::checkNaturalSpawn, net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent.Operation.REPLACE); event.register(AMIYA.get(), net.minecraft.world.entity.SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, PartyGuestEntity::checkNaturalSpawn, net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent.Operation.REPLACE); });
         NeoForge.EVENT_BUS.addListener(DollAttraction::tick);
         NeoForge.EVENT_BUS.addListener(DollPeace::target);
         NeoForge.EVENT_BUS.addListener(DollPeace::damage);

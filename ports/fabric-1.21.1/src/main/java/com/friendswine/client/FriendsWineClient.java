@@ -26,6 +26,7 @@ public final class FriendsWineClient implements net.fabricmc.api.ClientModInitia
         net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(FriendsWine.DOLL_BLOCK_ENTITY.get(), DollRenderer::new);
         net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry.register(FriendsWine.KASUMI.get(), PartyGuestRenderer::new);
         net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry.register(FriendsWine.EMMA.get(), PartyGuestRenderer::new);
+        net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry.register(FriendsWine.AMIYA.get(), PartyGuestRenderer::new);
         DollItemRenderer itemRenderer = new DollItemRenderer();
         net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry.INSTANCE.register(FriendsWine.DOLL_ITEM.get(), itemRenderer::renderByItem);
         net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register(this::clientTick);

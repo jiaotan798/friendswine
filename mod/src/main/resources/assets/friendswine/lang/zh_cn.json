@@ -40,5 +40,13 @@
   "friendswine.settings.invalidRange": "压缩 0～90；变宽 0～200；自转／绕圈 0～4",
   "friendswine.settings.invalidCreatureRange": "生物倍率须为 0.5～20，且最小值 ≤ 最大值",
   "friendswine.settings.invalidNumber": "请输入有效数字",
-  "friendswine.settings.saveFailed": "无法保存设置，请检查配置目录。"
+  "friendswine.settings.saveFailed": "无法保存设置，请检查配置目录。",
+  "entity.friendswine.amiya": "阿米娅",
+  "item.friendswine.amiya_spawn_egg": "阿米娅生成蛋",
+  "friendswine.config.amiyaMinScale": "阿米娅最小显示倍率",
+  "friendswine.config.amiyaMaxScale": "阿米娅最大显示倍率",
+  "friendswine.config.amiyaMinScale.tooltip": "0.5～20，默认 0.75，不得大于阿米娅最大显示倍率。仅影响本机；随玩偶音乐整体变大变小，碰撞箱不变。",
+  "friendswine.config.amiyaMaxScale.tooltip": "0.5～20，默认 1.25，不得小于阿米娅最小显示倍率。仅影响本机；倒置范围会恢复默认值。",
+  "friendswine.settings.amiyaPage": "阿米娅大小",
+  "subtitles.friendswine.guest_steal": "生物偷走了玩偶"
 }

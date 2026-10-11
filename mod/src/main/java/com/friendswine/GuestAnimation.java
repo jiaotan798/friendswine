@@ -1,9 +1,14 @@
 package com.friendswine;
 
-/** Full-canvas GIF frame timing shared by all six game targets. */
+/** 六版本共用的完整画布选帧、摄像机朝向与音乐缩放计算。 */
 public final class GuestAnimation {
     private GuestAnimation() {}
 
+    public static int columns(GuestVariant variant) { return variant.columns; }
+    public static int rows(GuestVariant variant) { return variant.rows; }
+    public static float aspect(GuestVariant variant, boolean dancing) { return dancing ? variant.danceAspect : variant.idleAspect; }
+
+    // 保留已有两角色调用方式，旧客户端验证入口仍可调用。
     public static int columns(boolean emma) { return emma ? 5 : 10; }
     public static int rows(boolean emma) { return emma ? 5 : 10; }
     public static float aspect(boolean emma, boolean dancing) {
@@ -15,10 +20,14 @@ public final class GuestAnimation {
         return dx * dx + dz * dz > 1e-12 ? (float) Math.toDegrees(Math.atan2(dx, dz)) : 180 - cameraYaw;
     }
 
-    public static int frame(boolean emma, double seconds) {
+    /** 角色 GIF 保持素材原速，艾玛最后一帧的 40ms 由帧号上限覆盖。 */
+    public static int frame(GuestVariant variant, double seconds) {
         if (!Double.isFinite(seconds) || seconds <= 0) return 0;
-        double millis = seconds * 1000 % (emma ? 440 : 9900);
-        return emma ? Math.min(20, (int) (millis / 20)) : Math.min(98, (int) (millis / 100));
+        double millis = seconds * 1000 % variant.loopMs;
+        return Math.min(variant.frames - 1, (int) (millis / (variant == GuestVariant.EMMA ? 20 : 100)));
+    }
+    public static int frame(boolean emma, double seconds) {
+        return frame(emma ? GuestVariant.EMMA : GuestVariant.KASUMI, seconds);
     }
 
     public static float scale(double seconds, double min, double max) {
@@ -27,7 +36,7 @@ public final class GuestAnimation {
         return (float) (max + (min - max) * JellyAnimation.musicSquash(seconds));
     }
 
-    /** Standalone check: compile with JellyAnimation, then run java -ea com.friendswine.GuestAnimation. */
+    /** 与 JellyAnimation、GuestVariant 一起编译，再用 -ea 运行以检查选帧、朝向及缩放边界。 */
     public static void main(String[] args) {
         assert facingYaw(0, 1, 0) == 0;
         assert facingYaw(1, 0, 0) == 90;
@@ -36,6 +45,12 @@ public final class GuestAnimation {
         assert facingYaw(0, 0, 180) == 0;
         assert facingYaw(0, 0, 90) == 90;
         assert facingYaw(1e-8, 1e-8, -90) == 270;
+        assert frame(GuestVariant.AMIYA, 0.099999) == 0;
+        assert frame(GuestVariant.AMIYA, 0.1) == 1;
+        assert frame(GuestVariant.AMIYA, 2.699999) == 26;
+        assert frame(GuestVariant.AMIYA, 2.7) == 0;
+        assert columns(GuestVariant.AMIYA) == 6 && rows(GuestVariant.AMIYA) == 5;
+        assert aspect(GuestVariant.AMIYA, false) == 1;
         assert frame(false, 0) == 0;
         assert frame(false, 0.099999) == 0;
         assert frame(false, 0.1) == 1;

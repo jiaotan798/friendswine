@@ -261,8 +261,8 @@ public final class WineGameTests {
                             false, helper.getLevel().registryAccess());
                     FriendsWine.TAB.get().buildContents(parameters);
                     List<Item> contents = FriendsWine.TAB.get().getDisplayItems().stream().map(ItemStack::getItem).toList();
-                    helper.assertTrue(contents.equals(List.of(FriendsWine.DOLL_ITEM.get(), FriendsWine.REMOTE.get(), FriendsWine.WINE.get(), FriendsWine.KASUMI_SPAWN_EGG.get(), FriendsWine.EMMA_SPAWN_EGG.get())),
-                            "The dedicated tab must contain doll, remote, wine and both spawn eggs in order");
+                    helper.assertTrue(contents.equals(List.of(FriendsWine.DOLL_ITEM.get(), FriendsWine.REMOTE.get(), FriendsWine.WINE.get(), FriendsWine.KASUMI_SPAWN_EGG.get(), FriendsWine.EMMA_SPAWN_EGG.get(), FriendsWine.AMIYA_SPAWN_EGG.get())),
+                            "The dedicated tab must contain doll, remote, wine and all three spawn eggs in order");
                     for (var key : List.of(CreativeModeTabs.FUNCTIONAL_BLOCKS, CreativeModeTabs.TOOLS_AND_UTILITIES)) {
                         var tab = net.minecraft.core.registries.BuiltInRegistries.CREATIVE_MODE_TAB.get(key);
                         tab.buildContents(parameters);

@@ -28,6 +28,7 @@ public final class FriendsWineClient {
             e.registerBlockEntityRenderer(FriendsWine.DOLL_BLOCK_ENTITY.get(),DollRenderer::new);
             e.registerEntityRenderer(FriendsWine.KASUMI.get(),PartyGuestRenderer::new);
             e.registerEntityRenderer(FriendsWine.EMMA.get(),PartyGuestRenderer::new);
+            e.registerEntityRenderer(FriendsWine.AMIYA.get(),PartyGuestRenderer::new);
         });
         bus.addListener((net.minecraftforge.client.event.RegisterClientReloadListenersEvent e)->e.registerReloadListener((ResourceManagerReloadListener)manager->DollRenderer.invalidateMesh()));
         net.minecraftforge.fml.ModLoadingContext.get().registerExtensionPoint(net.minecraftforge.client.ConfigScreenHandler.ConfigScreenFactory.class,()->new net.minecraftforge.client.ConfigScreenHandler.ConfigScreenFactory((mc,parent)->new SettingsScreen(parent)));

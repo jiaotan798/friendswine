@@ -423,8 +423,11 @@ public final class DollGameTests {
             CompoundTag saved = doll.getUpdateTag();
             doll.setRemoved();
             doll.load(saved);
-            for (Mob mob : mobs) {
+            // 卸载后分开实体，防止彼此碰撞产生推力；仍在原玩偶作用范围内检查是否残留绕圈力。
+            for (int i = 0; i < mobs.length; i++) {
+                Mob mob = mobs[i];
                 helper.assertTrue(mob.getNavigation().isDone(), "Unloading releases orbit navigation immediately");
+                mob.setPos(center.x + (i % 3 - 1) * 3, center.y - 0.5, center.z + (i / 3 * 6 - 3));
                 mob.setDeltaMovement(Vec3.ZERO);
             }
         }).thenIdle(5).thenExecute(() -> {
@@ -441,7 +444,13 @@ public final class DollGameTests {
             // 保留活动玩偶与后续速度、碰撞信息，便于区分吸引未释放和实体碰撞导致的漂移。
             System.out.println("[friendswine orbit stop] active dolls=" + DollBlockEntity.getActiveDolls(helper.getLevel()).stream()
                     .map(active -> active.getBlockPos() + "/mode=" + active.getMode()).toList());
-            for (Mob mob : mobs) { helper.assertTrue(mob.getNavigation().isDone(), "Stop releases navigation"); mob.setDeltaMovement(Vec3.ZERO); }
+            // 停止后分开测试实体，排除新追加生物或轨道同伴碰撞留下的推力；仍在玩偶作用范围内验证解除牵引。
+            for (int i = 0; i < mobs.length; i++) {
+                Mob mob = mobs[i];
+                helper.assertTrue(mob.getNavigation().isDone(), "Stop releases navigation");
+                mob.setPos(center.x + (i % 3 - 1) * 3, center.y - 0.5, center.z + (i / 3 * 6 - 3));
+                mob.setDeltaMovement(Vec3.ZERO);
+            }
         }).thenIdle(5).thenExecute(() -> {
             for (Mob mob : mobs) helper.assertTrue(mob.getDeltaMovement().horizontalDistanceSqr() < 1e-8,
                     "Stopped orbit applies no force; id=" + mob.getId() + ", position=" + mob.position() + ", velocity=" + mob.getDeltaMovement()

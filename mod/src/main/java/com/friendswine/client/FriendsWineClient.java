@@ -45,6 +45,7 @@ public final class FriendsWineClient {
         event.registerBlockEntityRenderer(FriendsWine.DOLL_BLOCK_ENTITY.get(), DollRenderer::new);
         event.registerEntityRenderer(FriendsWine.KASUMI.get(), PartyGuestRenderer::new);
         event.registerEntityRenderer(FriendsWine.EMMA.get(), PartyGuestRenderer::new);
+        event.registerEntityRenderer(FriendsWine.AMIYA.get(), PartyGuestRenderer::new);
     }
 
     private void itemRenderers(RegisterClientExtensionsEvent event) {

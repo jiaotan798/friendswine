@@ -1,0 +1,54 @@
+{
+  "frameWidth": 1000,
+  "frameHeight": 1000,
+  "columns": 6,
+  "rows": 5,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loopMs": 2700,
+  "contentBounds": [
+    67,
+    24,
+    960,
+    984
+  ],
+  "idleSize": [
+    1000,
+    1000
+  ],
+  "idleContentBounds": [
+    153,
+    44,
+    947,
+    934
+  ],
+  "sourceGifSha256": "96f20b2820f6d4790f6a2968ae27e01500df3fcd745c259d9c19731e5ea1778c",
+  "sourcePngSha256": "82230b23f66bed6bb8a37b2440fab3ae5f586e9d4a5ec82948400c1aec7be7f3"
+}

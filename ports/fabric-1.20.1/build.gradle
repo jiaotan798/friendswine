@@ -16,6 +16,7 @@ tasks.withType(JavaExec).configureEach { javaLauncher = javaToolchains.launcherF
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8'; options.release = 17 }
 compileJava.source file('../../mod/src/main/java/com/friendswine/JellyAnimation.java')
 compileJava.source file('../../mod/src/main/java/com/friendswine/GuestAnimation.java')
+compileJava.source file('../../mod/src/main/java/com/friendswine/GuestVariant.java')
 sourceSets.main.resources.srcDir('../../mod/src/main/resources')
 processResources {
     inputs.property 'version', mod_version
