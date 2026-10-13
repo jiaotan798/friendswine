@@ -398,7 +398,7 @@ public final class PartyGuestGameTests {
         }).thenSucceed();
     }
 
-    /** 验证拒绝常规伤害和击退，保留虚空／清理并只返还一件装备。 */
+    /** 验证 10 点生命、原版伤害与击退，并覆盖普通死亡／管理员清理时的携带返还。 */
     public static void immunityAndCleanup(GameTestHelper helper) {
         prepare(helper);
         ServerPlayer attacker=player(helper,new Vec3(3.5,1,8.5));
@@ -407,30 +407,45 @@ public final class PartyGuestGameTests {
         for (GuestVariant variant:GuestVariant.values()) {
             PartyGuestEntity guest=guest(helper,variant,new Vec3(8.5,1,8.5),true);
             guest.setNoGravity(true);
-            float health=guest.getHealth();
+            helper.assertTrue(guest.getMaxHealth()==10 && guest.getHealth()==10,"三种角色生命上限均为 10 点（5 颗心）");
+            helper.assertTrue(guest.isAttackable(),"三种角色恢复原版可攻击判定");
             var sources=guest.damageSources();
+            // 每次恢复生命并清除原版短暂无敌帧，单独验证各类伤害，而不是累计伤害造成死亡。
             for (var source:List.of(sources.playerAttack(attacker),sources.mobAttack(attacker),sources.arrow(null,attacker),
                     sources.explosion(attacker,attacker),sources.fall(),sources.inFire(),sources.lava(),sources.drown(),sources.generic())) {
-                guest.invulnerableTime=0;
-                helper.assertFalse(guest.hurtServer(helper.getLevel(), source, 1),"常规伤害必须被拒绝："+variant);
-                helper.assertTrue(guest.getHealth()==health,"无敌不能靠受伤后回血实现");
+                guest.setHealth(10); guest.invulnerableTime=0;
+                helper.assertTrue(guest.hurtServer(helper.getLevel(),source,1),"常规伤害必须恢复："+variant+"/"+source);
+                helper.assertTrue(guest.getHealth()==9,"无护甲角色按原版扣除一点生命");
             }
-            guest.setDeltaMovement(Vec3.ZERO);
+            guest.setHealth(10); guest.invulnerableTime=0;
+            attacker.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.STICK));
             attacker.attack(guest);
-            guest.knockback(1,1,0);
-            helper.getLevel().explode(attacker,guest.getX(),guest.getY(),guest.getZ(),2,Level.ExplosionInteraction.NONE);
-            helper.assertTrue(guest.getHealth()==health && guest.getDeltaMovement().lengthSqr()<1e-9,"近战、横扫与真实爆炸都不能造成伤害或击退");
-            var source=sources.fellOutOfWorld();
-            guest.invulnerableTime=0;
-            helper.assertTrue(guest.hurtServer(helper.getLevel(), source, 1) && guest.getHealth()<health,"虚空伤害保留清理能力");
+            helper.assertTrue(guest.getHealth()<10,"真实玩家近战可伤害角色");
+            guest.setDeltaMovement(Vec3.ZERO); guest.knockback(1,1,0);
+            helper.assertTrue(guest.getDeltaMovement().horizontalDistanceSqr()>1e-8,"恢复原版横向击退");
+            guest.setHealth(10); guest.invulnerableTime=0; guest.setDeltaMovement(Vec3.ZERO);
+            // 使用小当量且不破坏方块的真实爆炸，验证伤害／推力并避免破坏后续清理测试的地面。
+            helper.getLevel().explode(attacker,guest.getX()-0.25,guest.getY()+guest.getBbHeight()/2,guest.getZ(),0.5F,Level.ExplosionInteraction.NONE);
+            helper.assertTrue(guest.getHealth()<10 && guest.getDeltaMovement().lengthSqr()>1e-8,"真实爆炸恢复伤害和推力");
+            guest.setHealth(10); guest.invulnerableTime=0;
+            helper.assertTrue(guest.hurtServer(helper.getLevel(),sources.fellOutOfWorld(),1) && guest.getHealth()==9,"虚空伤害继续生效");
             guest.setItemSlot(EquipmentSlot.MAINHAND,new ItemStack(FriendsWine.DOLL_ITEM.get()));
             guest.kill(helper.getLevel());
-            helper.assertTrue(!guest.isAlive() && guest.getMainHandItem().isEmpty(),"真实 /kill 入口可清理并释放携带物");
+            helper.assertTrue(!guest.isAlive() && guest.getMainHandItem().isEmpty(),"真实 /kill 仍可清理并释放携带物");
             int drops=helper.getLevel().getEntitiesOfClass(ItemEntity.class,guest.getBoundingBox().inflate(3)).stream()
                     .filter(item->item.getItem().is(FriendsWine.DOLL_ITEM.get())).mapToInt(item->item.getItem().getCount()).sum();
             helper.assertTrue(drops==1,"关闭生物掉落时 /kill 也只返还一个携带玩偶");
             for (var item:helper.getLevel().getEntitiesOfClass(ItemEntity.class,guest.getBoundingBox().inflate(3))) item.discard();
             guest.discard();
+            // 不仅管理员清理，普通受伤死亡也必须返还玩家被偷走的玩偶。
+            PartyGuestEntity victim=guest(helper,variant,new Vec3(8.5,1,8.5),true);
+            victim.setItemSlot(EquipmentSlot.MAINHAND,new ItemStack(FriendsWine.DOLL_ITEM.get()));
+            helper.assertTrue(victim.hurtServer(helper.getLevel(),victim.damageSources().playerAttack(attacker),20) && !victim.isAlive(),"普通攻击可以杀死 10 点生命的角色");
+            int deathDrops=helper.getLevel().getEntitiesOfClass(ItemEntity.class,victim.getBoundingBox().inflate(3)).stream()
+                    .filter(item->item.getItem().is(FriendsWine.DOLL_ITEM.get())).mapToInt(item->item.getItem().getCount()).sum();
+            helper.assertTrue(deathDrops==1 && victim.getMainHandItem().isEmpty(),"普通死亡只返还一件携带玩偶，不因关闭生物掉落而丢失或复制");
+            for (var item:helper.getLevel().getEntitiesOfClass(ItemEntity.class,victim.getBoundingBox().inflate(3))) item.discard();
+            victim.discard();
         }
         helper.getLevel().getGameRules().set(GameRules.MOB_DROPS,originalMobLoot,helper.getLevel().getServer());
         remove(helper,attacker); clean(helper); helper.succeed();

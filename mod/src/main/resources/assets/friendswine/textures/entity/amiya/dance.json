@@ -1,6 +1,10 @@
 {
-  "frameWidth": 1000,
-  "frameHeight": 1000,
+  "sourceFrameWidth": 1000,
+  "sourceFrameHeight": 1000,
+  "resizeDivisor": 2,
+  "resampling": "LANCZOS",
+  "frameWidth": 500,
+  "frameHeight": 500,
   "columns": 6,
   "rows": 5,
   "durationsMs": [
@@ -34,10 +38,10 @@
   ],
   "loopMs": 2700,
   "contentBounds": [
-    67,
-    24,
-    960,
-    984
+    31,
+    9,
+    483,
+    494
   ],
   "idleSize": [
     1000,

@@ -31,7 +31,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-/** 三种非敌对生物共用寻路、常规伤害免疫及原版装备保存／同步；仅跟随玩偶持有者时提速。 */
+/** 三种非敌对生物共用寻路、原版伤害及装备保存／同步；仅跟随玩偶持有者时提速。 */
 public final class PartyGuestEntity extends PathfinderMob {
     // 跟随目标仅在当前加载会话中保留；重载时按附近玩家重新选择，无需新增存档字段。
     // shortcut: 沿用已加载区块中的普通寻路，不传送、不跨维度；需要远距离召回时再扩展。
@@ -49,18 +49,7 @@ public final class PartyGuestEntity extends PathfinderMob {
     }
     public boolean isEmma() { return variant() == GuestVariant.EMMA; }
 
-    /** 所有常规伤害都免疫；只保留 /kill 与虚空，避免管理员无法清理实体。 */
-    @Override public boolean isInvulnerableTo(net.minecraft.world.damagesource.DamageSource source) {
-        return (!source.is(net.minecraft.world.damagesource.DamageTypes.GENERIC_KILL)
-                && !source.is(net.minecraft.world.damagesource.DamageTypes.FELL_OUT_OF_WORLD))
-                || super.isInvulnerableTo(source);
-    }
-    @Override public boolean isAttackable() { return false; }
-    // 爆炸推力独立于受伤成功与否，必须同时跳过爆炸处理；不修改方块或其他实体。
-    @Override public boolean ignoreExplosion() { return true; }
-    // 横扫等路径可先施加击退再判断伤害，因此不能只依赖伤害免疫。
-    @Override public void knockback(double strength, double x, double z) {}
-
+    /** 生命值使用原版点数：10 点等于 5 颗心；伤害、攻击判定和击退均由原版处理。 */
     public static AttributeSupplier.Builder createAttributes() {
         return PathfinderMob.createMobAttributes().add(Attributes.MAX_HEALTH, 10)
                 .add(Attributes.MOVEMENT_SPEED, 0.25);

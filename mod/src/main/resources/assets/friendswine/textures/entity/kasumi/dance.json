@@ -1,6 +1,10 @@
 {
-  "frameWidth": 240,
-  "frameHeight": 240,
+  "sourceFrameWidth": 240,
+  "sourceFrameHeight": 240,
+  "resizeDivisor": 2,
+  "resampling": "LANCZOS",
+  "frameWidth": 120,
+  "frameHeight": 120,
   "columns": 10,
   "rows": 10,
   "durationsMs": [
@@ -106,10 +110,10 @@
   ],
   "loopMs": 9900,
   "contentBounds": [
-    6,
     0,
-    239,
-    240
+    0,
+    120,
+    120
   ],
   "idleSize": [
     169,
