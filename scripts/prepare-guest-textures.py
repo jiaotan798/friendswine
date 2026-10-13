@@ -1,4 +1,4 @@
-"""将仓库内原始 GIF 转为完整画布 RGBA 图集，并校验像素和帧时长。"""
+"""将原始 GIF 逐帧缩小为半分辨率 RGBA 图集，保持完整画布、帧时长与透明度。"""
 from pathlib import Path
 from PIL import Image
 import argparse
@@ -39,7 +39,7 @@ def bounds_union(bounds):
 
 
 def prepare(name, png, gif, expected, columns, output_root=OUTPUT_ROOT):
-    """在指定目录重建资源并逐帧校验；原始素材只读，默认写入生产资源目录。"""
+    """只降低动画分辨率，静态图和原素材保持原样；编码后检查每个图集单元的像素。"""
     destination = output_root / name
     destination.mkdir(parents=True, exist_ok=True)
     # 自定义输出目录可能与素材目录重合，跳过同文件复制以避免 SameFileError。
@@ -52,24 +52,35 @@ def prepare(name, png, gif, expected, columns, output_root=OUTPUT_ROOT):
             frames.append(image.convert("RGBA"))
             durations.append(image.info["duration"])
     assert durations == expected, (name, durations)
+    source_width, source_height = frames[0].size
+    source_first_frame = frames[0].tobytes() if name == "amiya" else None
+    # 逐帧缩放以免混入相邻帧；RGBA 的 LANCZOS 使用预乘透明度，减少透明边缘黑边。
+    # 奇数尺寸向上取整，画布不裁切；渲染器仍使用原始比例，帧数与网格布局保持不变。
+    size = ((source_width + 1) // 2, (source_height + 1) // 2)
+    frames = [frame.resize(size, Image.Resampling.LANCZOS) for frame in frames]
     width, height = frames[0].size
     rows = (len(frames) + columns - 1) // columns
-    # 保留完整画布和透明像素；裁帧会改变渲染器使用的角色位置与比例。
+    # 保留完整缩放画布；未使用的图集单元全透明，不能误参与循环。
     atlas = Image.new("RGBA", (width * columns, height * rows), (0, 0, 0, 0))
     for i, frame in enumerate(frames):
         atlas.paste(frame, ((i % columns) * width, (i // columns) * height))
-    atlas.save(destination / "dance.png", optimize=True)
+    atlas.save(destination / "dance.png", optimize=True, compress_level=9)
     with Image.open(destination / "dance.png") as encoded:
         for i, frame in enumerate(frames):
             x, y = (i % columns) * width, (i // columns) * height
             assert encoded.crop((x, y, x + width, y + height)).tobytes() == frame.tobytes()
+        for i in range(len(frames), columns * rows):
+            x, y = (i % columns) * width, (i // columns) * height
+            assert encoded.crop((x, y, x + width, y + height)).getchannel("A").getbbox() is None
     with Image.open(png) as idle:
         if name == "amiya":
             # 阿米娅静态资源必须就是原 GIF 首帧，连透明区域的 RGB 值也保留。
-            assert idle.convert("RGBA").tobytes() == frames[0].tobytes()
+            assert idle.convert("RGBA").tobytes() == source_first_frame
         idle_bounds = list(idle.convert("RGBA").getchannel("A").getbbox())
         idle_size = list(idle.size)
     descriptor = {
+        "sourceFrameWidth": source_width, "sourceFrameHeight": source_height,
+        "resizeDivisor": 2, "resampling": "LANCZOS",
         "frameWidth": width, "frameHeight": height,
         "columns": columns, "rows": rows,
         "durationsMs": durations, "loopMs": sum(durations),

@@ -1,6 +1,10 @@
 {
-  "frameWidth": 159,
-  "frameHeight": 185,
+  "sourceFrameWidth": 159,
+  "sourceFrameHeight": 185,
+  "resizeDivisor": 2,
+  "resampling": "LANCZOS",
+  "frameWidth": 80,
+  "frameHeight": 93,
   "columns": 5,
   "rows": 5,
   "durationsMs": [
@@ -30,8 +34,8 @@
   "contentBounds": [
     0,
     0,
-    159,
-    185
+    80,
+    93
   ],
   "idleSize": [
     159,
