@@ -70,7 +70,9 @@ public final class PartyGuestGameTests {
         var cookie=net.minecraft.server.network.CommonListenerCookie.createInitial(new com.mojang.authlib.GameProfile(UUID.randomUUID(),"GuestGameTest"),false);
         ServerPlayer player=new ServerPlayer(server,helper.getLevel(),cookie.gameProfile(),cookie.clientInformation());
         var connection=new net.minecraft.network.Connection(net.minecraft.network.protocol.PacketFlow.SERVERBOUND);
-        new io.netty.channel.embedded.EmbeddedChannel(connection); server.getPlayerList().placeNewPlayer(connection,player,cookie);
+        new io.netty.channel.embedded.EmbeddedChannel(connection);
+        // 模拟连接也必须协商自定义载荷，否则加载器会拒绝新增死亡事件。
+        net.neoforged.neoforge.network.registration.NetworkRegistry.configureMockConnection(connection); server.getPlayerList().placeNewPlayer(connection,player,cookie);
         player.setGameMode(GameType.SURVIVAL); player.setNoGravity(true);
         player.moveTo(helper.absoluteVec(relative)); return player;
     }
@@ -81,7 +83,9 @@ public final class PartyGuestGameTests {
         var player = new ServerPlayer(server, helper.getLevel(), cookie.gameProfile(), cookie.clientInformation());
         var connection = new net.minecraft.network.Connection(net.minecraft.network.protocol.PacketFlow.SERVERBOUND);
         var channel = new io.netty.channel.embedded.EmbeddedChannel(connection);
-        server.getPlayerList().placeNewPlayer(connection, player, cookie);
+
+        // 模拟连接也必须协商自定义载荷，否则加载器会拒绝新增死亡事件。
+        net.neoforged.neoforge.network.registration.NetworkRegistry.configureMockConnection(connection); server.getPlayerList().placeNewPlayer(connection, player, cookie);
         channel.pipeline().addLast(new io.netty.channel.ChannelOutboundHandlerAdapter() {
             @Override public void write(io.netty.channel.ChannelHandlerContext context, Object message, io.netty.channel.ChannelPromise promise) throws Exception {
                 if (message instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket sound && sound.getSound().value() == FriendsWine.GUEST_STEAL.get()) sounds.add(sound);
@@ -541,5 +545,111 @@ public final class PartyGuestGameTests {
             guest.discard();
         }
         helper.destroyBlock(idlePos); remove(helper,holder); remove(helper,other); clean(helper); griefing(helper,originalGriefing); helper.succeed();
+    }
+
+    private static PartyGuestEntity cancelledDeath;
+    private static boolean deathListenerInstalled;
+    private static void cancelDeath(net.neoforged.neoforge.event.entity.living.LivingDeathEvent event) {
+        if (event.getEntity() == cancelledDeath) event.setCanceled(true);
+    }
+
+    private static void scope(DeathFlashScope scope) { ServerConfig.DEATH_FLASH_SCOPE.set(ServerConfig.FlashScope.valueOf(scope.name())); }
+    private static boolean flashPacket(Object packet) { return packet instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket payload && payload.payload() instanceof GuestDeathNetworking.Event; }
+    private static long flashCount(List<Object> packets) { return packets.stream().filter(PartyGuestGameTests::flashPacket).count(); }
+    private static long announcementCount(List<Object> packets) {
+        return packets.stream().filter(packet -> packet instanceof net.minecraft.network.protocol.game.ClientboundSystemChatPacket chat
+                && chat.content().getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents contents
+                && contents.getKey().equals("message.friendswine.guestKilled")).count();
+    }
+    private static void hit(GameTestHelper helper, PartyGuestEntity entity, net.minecraft.world.damagesource.DamageSource source, float amount) {
+        entity.invulnerableTime = 0;
+        entity.hurt(source, amount);
+    }
+    private static ServerPlayer deathPlayer(GameTestHelper helper, Vec3 relative, List<Object> packets) {
+        var server = helper.getLevel().getServer();
+        var cookie = net.minecraft.server.network.CommonListenerCookie.createInitial(new com.mojang.authlib.GameProfile(UUID.randomUUID(), "DeathFlashTest"), false);
+        var player = new ServerPlayer(server, helper.getLevel(), cookie.gameProfile(), cookie.clientInformation());
+        var connection = new net.minecraft.network.Connection(net.minecraft.network.protocol.PacketFlow.SERVERBOUND);
+        var channel = new io.netty.channel.embedded.EmbeddedChannel(connection);
+
+        // 模拟连接也必须协商自定义载荷，否则加载器会拒绝新增死亡事件。
+        net.neoforged.neoforge.network.registration.NetworkRegistry.configureMockConnection(connection); server.getPlayerList().placeNewPlayer(connection, player, cookie);
+        channel.pipeline().addLast(new io.netty.channel.ChannelOutboundHandlerAdapter() {
+            @Override public void write(io.netty.channel.ChannelHandlerContext context, Object message, io.netty.channel.ChannelPromise promise) throws Exception {
+                packets.add(message);
+                super.write(context, message, promise);
+            }
+        });
+        player.setGameMode(GameType.SURVIVAL); player.setNoGravity(true);
+        player.moveTo(helper.absoluteVec(relative)); return player;
+    }
+
+    /** 真正杀死三个角色，截获公屏消息与闪屏包；清理、取消死亡和重复回调必须保持静默。 */
+    @GameTest(template="doll_range",batch="friendswine-guest-death",timeoutTicks=100)
+    public static void deathFlashAndAnnouncement(GameTestHelper helper) {
+        prepare(helper);
+        if (!deathListenerInstalled) { net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(PartyGuestGameTests::cancelDeath); deathListenerInstalled = true; }
+        DeathFlashScope previous = ServerConfig.deathFlashScope();
+        var nearPackets = new java.util.ArrayList<Object>();
+        var farPackets = new java.util.ArrayList<Object>();
+        var killer = deathPlayer(helper, new Vec3(8.5,1,8.5), nearPackets);
+        var far = deathPlayer(helper, new Vec3(80.5,1,8.5), farPackets);
+        try {
+            for (var variant : GuestVariant.values()) {
+                scope(DeathFlashScope.NEARBY);
+                var victim = guest(helper, variant, new Vec3(10.5,1,8.5), true);
+                far.moveTo(victim.position().add(48,0,0));
+                helper.assertTrue(GuestDeathNetworking.recipients(victim, DeathFlashScope.NEARBY).contains(far), "48 格边界包含在内");
+                far.moveTo(victim.position().add(48.01,0,0));
+                helper.assertFalse(GuestDeathNetworking.recipients(victim, DeathFlashScope.NEARBY).contains(far), "超过48格不接收");
+                far.moveTo(victim.position().add(0,48.01,0));
+                helper.assertFalse(GuestDeathNetworking.recipients(victim, DeathFlashScope.NEARBY).contains(far), "垂直距离同样参与球形范围");
+                nearPackets.clear(); farPackets.clear();
+                victim.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(FriendsWine.DOLL_ITEM.get()));
+                hit(helper, victim, victim.damageSources().playerAttack(killer), 20);
+                helper.assertTrue(!victim.isAlive(), "正常近战能杀死十点生命的角色");
+                helper.assertTrue(flashCount(nearPackets)==1 && flashCount(farPackets)==0, "附近模式只给范围内玩家发送闪屏");
+                helper.assertTrue(announcementCount(nearPackets)==1 && announcementCount(farPackets)==1, "范围外仍收到一次全服播报");
+                victim.die(victim.damageSources().playerAttack(killer));
+                helper.assertTrue(flashCount(nearPackets)==1 && announcementCount(farPackets)==1, "重复死亡通知不重复触发");
+                helper.assertTrue(victim.getMainHandItem().isEmpty(), "死亡效果不能阻断携带玩偶返还");
+                victim.discard();
+
+                scope(DeathFlashScope.GLOBAL);
+                nearPackets.clear(); farPackets.clear();
+                victim = guest(helper, variant, new Vec3(10.5,1,8.5), true);
+                hit(helper, victim, victim.damageSources().arrow(null,killer), 20);
+                helper.assertTrue(flashCount(nearPackets)==1 && flashCount(farPackets)==1, "全服模式远程击杀也给远处玩家发事件");
+                helper.assertTrue(announcementCount(farPackets)==1, "每次有效击杀单独播报");
+                scope(DeathFlashScope.NEARBY);
+                helper.assertTrue(flashCount(farPackets)==1, "修改配置不会撤销已经发出的事件");
+                victim.discard();
+
+                nearPackets.clear(); farPackets.clear();
+                victim = guest(helper, variant, new Vec3(10.5,1,8.5), true);
+                hit(helper, victim, victim.damageSources().playerAttack(killer), 1);
+                victim.kill();
+                victim.discard();
+                victim = guest(helper, variant, new Vec3(10.5,1,8.5), true);
+                hit(helper, victim, victim.damageSources().playerAttack(killer), 1);
+                hit(helper, victim, victim.damageSources().fellOutOfWorld(), 20);
+                victim.discard();
+                victim = guest(helper, variant, new Vec3(10.5,1,8.5), true);
+                hit(helper, victim, victim.damageSources().generic(), 20);
+                victim.discard();
+                victim = guest(helper, variant, new Vec3(10.5,1,8.5), true);
+                victim.discard();
+                helper.assertTrue(flashCount(nearPackets)==0 && announcementCount(farPackets)==0, "管理员／虚空清理、无归属环境死亡和直接移除均不触发");
+
+                cancelledDeath = guest(helper, variant, new Vec3(10.5,1,8.5), true);
+                hit(helper, cancelledDeath, cancelledDeath.damageSources().playerAttack(killer), 20);
+                helper.assertTrue(flashCount(nearPackets)==0 && announcementCount(farPackets)==0, "加载器取消死亡后不能提前播报或闪屏");
+                cancelledDeath.discard(); cancelledDeath = null;
+            }
+            helper.succeed();
+        } finally {
+            cancelledDeath = null; scope(previous);
+            remove(helper,killer); remove(helper,far); clean(helper);
+        }
     }
 }

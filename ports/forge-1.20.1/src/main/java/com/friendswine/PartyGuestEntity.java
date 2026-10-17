@@ -55,6 +55,21 @@ public final class PartyGuestEntity extends PathfinderMob {
                 .add(Attributes.MOVEMENT_SPEED, 0.25);
     }
 
+    /** 原版确认死亡后才发事件；加载器取消死亡时 dead 仍为 false，不能提前广播。 */
+    @Override
+    public void die(net.minecraft.world.damagesource.DamageSource source) {
+        boolean wasDead = dead;
+        var killer = getKillCredit();
+        super.die(source);
+        // 管理员和虚空清理即使残留玩家击杀归属也不触发；直接 discard 不经过这里。
+        if (!wasDead && dead && level() instanceof ServerLevel
+                && !source.is(net.minecraft.world.damagesource.DamageTypes.GENERIC_KILL)
+                && !source.is(net.minecraft.world.damagesource.DamageTypes.FELL_OUT_OF_WORLD)
+                && killer instanceof net.minecraft.server.level.ServerPlayer player) {
+            GuestDeathNetworking.trigger(this, player);
+        }
+    }
+
     @Override
     protected void registerGoals() {
         goalSelector.addGoal(0, new FloatGoal(this));

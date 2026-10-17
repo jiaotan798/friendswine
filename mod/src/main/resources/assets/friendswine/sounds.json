@@ -17,5 +17,14 @@
         "attenuation_distance": 16
       }
     ]
+  },
+  "guest_death_flash": {
+    "subtitle": "subtitles.friendswine.guestDeathFlash",
+    "sounds": [
+      {
+        "name": "friendswine:guest_death_flash",
+        "stream": false
+      }
+    ]
   }
 }

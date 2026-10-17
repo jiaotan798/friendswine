@@ -33,3 +33,7 @@ jar { archiveClassifier = 'dev' }
 loom { runs { client { programArgs '--username', 'FriendsWineQA' }; server { programArgs '--nogui' } } }
 
 fabricApi { configureTests { createSourceSet = true; modId = "friendswine-tests"; enableClientGameTests = false; eula = true } }
+
+compileJava.source file('../../mod/src/main/java/com/friendswine/DeathFlashScope.java')
+
+compileJava.source file('../../mod/src/main/java/com/friendswine/DeathFlashTimer.java')

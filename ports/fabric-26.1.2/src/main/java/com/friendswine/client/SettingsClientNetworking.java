@@ -4,8 +4,8 @@ import net.fabricmc.fabric.api.client.networking.v1.*;
 final class SettingsClientNetworking {
     static void register() {
         ClientPlayNetworking.registerGlobalReceiver(SettingsNetworking.State.TYPE,(packet,context)->context.client().execute(()->{
-            SettingsNetworking.clientOrbit=packet.speed(); SettingsNetworking.canEdit=packet.editable();
+            SettingsNetworking.clientOrbit=packet.speed(); SettingsNetworking.canEdit=packet.editable(); SettingsNetworking.clientScope=com.friendswine.DeathFlashScope.fromConfig(packet.scope());
         }));
-        ClientPlayConnectionEvents.DISCONNECT.register((handler,client)->{ SettingsNetworking.clientOrbit=1; SettingsNetworking.canEdit=false; });
+        ClientPlayConnectionEvents.DISCONNECT.register((handler,client)->{ SettingsNetworking.clientScope=com.friendswine.DeathFlashScope.NEARBY; SettingsNetworking.clientOrbit=1; SettingsNetworking.canEdit=false; });
     }
 }

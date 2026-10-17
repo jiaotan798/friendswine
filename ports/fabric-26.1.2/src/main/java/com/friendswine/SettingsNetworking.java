@@ -13,28 +13,31 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
 public final class SettingsNetworking {
+    // 网络边界严格检查枚举，不能把恶意／过期客户端提交的无效值默认为合法修改。
+    private static boolean validScope(String scope) { return "NEARBY".equals(scope) || "GLOBAL".equals(scope); }
+    public static DeathFlashScope clientScope=DeathFlashScope.NEARBY;
     public static double clientOrbit=1;
     public static boolean canEdit;
-    public record State(double speed,boolean editable) implements CustomPacketPayload {
+    public record State(double speed,boolean editable,String scope) implements CustomPacketPayload {
         public static final Type<State> TYPE=new Type<>(Identifier.fromNamespaceAndPath("friendswine","settings"));
-        public static final StreamCodec<RegistryFriendlyByteBuf,State> CODEC=StreamCodec.composite(ByteBufCodecs.DOUBLE,State::speed,ByteBufCodecs.BOOL,State::editable,State::new);
+        public static final StreamCodec<RegistryFriendlyByteBuf,State> CODEC=StreamCodec.composite(ByteBufCodecs.DOUBLE,State::speed,ByteBufCodecs.BOOL,State::editable,ByteBufCodecs.STRING_UTF8,State::scope,State::new);
         public Type<State> type() { return TYPE; }
     }
-    public record Change(double speed) implements CustomPacketPayload {
+    public record Change(double speed,String scope) implements CustomPacketPayload {
         public static final Type<Change> TYPE=new Type<>(Identifier.fromNamespaceAndPath("friendswine","orbit_speed"));
-        public static final StreamCodec<RegistryFriendlyByteBuf,Change> CODEC=StreamCodec.composite(ByteBufCodecs.DOUBLE,Change::speed,Change::new);
+        public static final StreamCodec<RegistryFriendlyByteBuf,Change> CODEC=StreamCodec.composite(ByteBufCodecs.DOUBLE,Change::speed,ByteBufCodecs.STRING_UTF8,Change::scope,Change::new);
         public Type<Change> type() { return TYPE; }
     }
     private static boolean allowed(ServerPlayer player) { return player.permissions().hasPermission(net.minecraft.server.permissions.Permissions.COMMANDS_GAMEMASTER) || player.level().getServer().isSingleplayerOwner(player.nameAndId()); }
-    private static void send(ServerPlayer player) { ServerPlayNetworking.send(player,new State(ServerConfig.ORBIT_SPEED.get(),allowed(player))); }
+    private static void send(ServerPlayer player) { ServerPlayNetworking.send(player,new State(ServerConfig.ORBIT_SPEED.get(),allowed(player),ServerConfig.deathFlashScope().name())); }
     private static void broadcast(MinecraftServer server) { server.getPlayerList().getPlayers().forEach(SettingsNetworking::send); }
     public static void register() {
         PayloadTypeRegistry.clientboundPlay().register(State.TYPE,State.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(Change.TYPE,Change.CODEC);
         ServerPlayConnectionEvents.JOIN.register((handler,sender,server)->send(handler.player));
         ServerPlayNetworking.registerGlobalReceiver(Change.TYPE,(packet,context)->context.server().execute(()->{
-            if (!allowed(context.player()) || !Double.isFinite(packet.speed()) || packet.speed()<0 || packet.speed()>4) { send(context.player()); return; }
-            try { ServerConfig.save(packet.speed()); broadcast(context.server()); }
+            if (!allowed(context.player()) || !Double.isFinite(packet.speed()) || packet.speed()<0 || packet.speed()>4 || !validScope(packet.scope())) { send(context.player()); return; }
+            try { ServerConfig.save(packet.speed(),DeathFlashScope.valueOf(packet.scope())); broadcast(context.server()); }
             catch (RuntimeException error) { context.player().sendSystemMessage(Component.literal("朋友的酒：无法保存服务器设置")); }
         }));
         CommandRegistrationCallback.EVENT.register((dispatcher,registries,environment)->dispatcher.register(Commands.literal("friendswine")

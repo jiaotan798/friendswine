@@ -27,6 +27,7 @@ public final class FriendsWine {
     public static final String MODID="friendswine";
     private static final DeferredRegister<net.minecraft.sounds.SoundEvent> SOUNDS = DeferredRegister.create(Registries.SOUND_EVENT, MODID);
     public static final RegistryObject<net.minecraft.sounds.SoundEvent> GUEST_STEAL = SOUNDS.register("guest_steal", () -> net.minecraft.sounds.SoundEvent.createVariableRangeEvent(new net.minecraft.resources.ResourceLocation(MODID, "guest_steal")));
+    public static final RegistryObject<net.minecraft.sounds.SoundEvent> GUEST_DEATH_FLASH = SOUNDS.register("guest_death_flash", () -> net.minecraft.sounds.SoundEvent.createVariableRangeEvent(new net.minecraft.resources.ResourceLocation(MODID, "guest_death_flash")));
     private static final DeferredRegister<Block> BLOCKS=DeferredRegister.create(Registries.BLOCK,MODID);
     private static final DeferredRegister<Item> ITEMS=DeferredRegister.create(Registries.ITEM,MODID);
     private static final DeferredRegister<MobEffect> EFFECTS=DeferredRegister.create(Registries.MOB_EFFECT,MODID);
@@ -68,6 +69,7 @@ public final class FriendsWine {
         MinecraftForge.EVENT_BUS.addListener((PlayerInteractEvent.EntityInteract e)->{if(e.getTarget() instanceof net.minecraft.world.entity.npc.Villager villager)NitwitTrades.interact(villager,e.getEntity(),e.getHand());});
         MinecraftForge.EVENT_BUS.addListener((PlayerEvent.StartTracking e)->{if(e.getEntity() instanceof net.minecraft.server.level.ServerPlayer player)TipsySync.startTracking(player,e.getTarget());});
         SettingsNetworking.register();
+        GuestDeathNetworking.register();
         if(net.minecraftforge.fml.loading.FMLEnvironment.dist==net.minecraftforge.api.distmarker.Dist.CLIENT)com.friendswine.client.FriendsWineClient.register();
     }
 }

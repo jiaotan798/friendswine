@@ -48,5 +48,12 @@
   "friendswine.config.amiyaMinScale.tooltip": "0.5～20，默认 0.75，不得大于阿米娅最大显示倍率。仅影响本机；随玩偶音乐整体变大变小，碰撞箱不变。",
   "friendswine.config.amiyaMaxScale.tooltip": "0.5～20，默认 1.25，不得小于阿米娅最小显示倍率。仅影响本机；倒置范围会恢复默认值。",
   "friendswine.settings.amiyaPage": "阿米娅大小",
-  "subtitles.friendswine.guest_steal": "生物偷走了玩偶"
+  "subtitles.friendswine.guest_steal": "生物偷走了玩偶",
+  "message.friendswine.guestKilled": "%s被玩家 %s 击杀了！",
+  "friendswine.config.deathFlashScope": "闪屏触发范围",
+  "friendswine.config.deathFlashScope.tooltip": "统一控制图片、音效和自动发言；范围内为同维度48格，全服包括所有维度。",
+  "friendswine.config.deathFlashScope.NEARBY": "范围内（48格）",
+  "friendswine.config.deathFlashScope.GLOBAL": "全服（所有维度）",
+  "friendswine.settings.serverPage": "服务端设置",
+  "subtitles.friendswine.guestDeathFlash": "冰块闪屏"
 }

@@ -38,10 +38,12 @@ public final class FriendsWineClient implements net.fabricmc.api.ClientModInitia
                 dispatcher.register(net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal("friendswine")
                         .then(net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal("settings").executes(context -> { openSettings = true; return 1; }))));
         SettingsClientNetworking.register();
+        GuestDeathClientNetworking.register();
     }
 
     /** Client check: start muted, unmute; then mute/unmute RECORDS and press F3+T during playback. */
     private void clientTick(Minecraft mc) {
+        ClientDeathFlash.tick(mc);
         if (openSettings) { openSettings = false; mc.setScreen(new SettingsScreen(mc.screen)); }
         if (lastLevel != mc.level) {
             sounds.values().forEach(DollMusicSound::cancel);

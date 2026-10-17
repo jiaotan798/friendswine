@@ -10,7 +10,8 @@
   "client": [
     "EntityRenderDispatcherMixin",
     "CameraMixin",
-    "SoundEngineMixin"
+    "SoundEngineMixin",
+    "DeathFlashGuiMixin"
   ],
   "injectors": {
     "defaultRequire": 1

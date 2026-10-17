@@ -48,5 +48,12 @@
   "friendswine.config.amiyaMinScale.tooltip": "0.5–20, default 0.75. Cannot exceed Amiya's maximum. Local display only; pulses to doll music without changing the hitbox.",
   "friendswine.config.amiyaMaxScale.tooltip": "0.5–20, default 1.25. Cannot be below Amiya's minimum. Local display only; reversed ranges reset to defaults.",
   "friendswine.settings.amiyaPage": "Amiya size",
-  "subtitles.friendswine.guest_steal": "Guest steals a doll"
+  "subtitles.friendswine.guest_steal": "Guest steals a doll",
+  "message.friendswine.guestKilled": "%s was killed by player %s!",
+  "friendswine.config.deathFlashScope": "Death flash scope",
+  "friendswine.config.deathFlashScope.tooltip": "Controls image, sound and automatic chat. Nearby: same dimension within 48 blocks. Global: all dimensions.",
+  "friendswine.config.deathFlashScope.NEARBY": "Nearby (48 blocks)",
+  "friendswine.config.deathFlashScope.GLOBAL": "Global (all dimensions)",
+  "friendswine.settings.serverPage": "Server settings",
+  "subtitles.friendswine.guestDeathFlash": "Ice flash"
 }

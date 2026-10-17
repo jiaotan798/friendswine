@@ -25,7 +25,8 @@ public final class PortGameTests {
         new Test("carrysaveplacementanddeath","doll_range",100,PartyGuestGameTests::carrySavePlacementAndDeath),
         new Test("realaiholderandidledoll","doll_range",300,PartyGuestGameTests::realAiHolderAndIdleDoll),
         new Test("immunityandcleanup","doll_range",100,PartyGuestGameTests::immunityAndCleanup),
-        new Test("theftspeedandrestoration","doll_range",100,PartyGuestGameTests::theftSpeedAndRestoration));
+        new Test("theftspeedandrestoration","doll_range",100,PartyGuestGameTests::theftSpeedAndRestoration),
+        new Test("deathflashandannouncement","doll_range",100,PartyGuestGameTests::deathFlashAndAnnouncement));
     public static void register(net.neoforged.bus.api.IEventBus bus) {
         var functions=net.neoforged.neoforge.registries.DeferredRegister.<Consumer<GameTestHelper>>create(Registries.TEST_FUNCTION,"friendswine");
         for(var test:TESTS)functions.register(test.name,()->test.run);

@@ -6,7 +6,8 @@
   "refmap": "friendswine.refmap.json",
   "client": [
     "CameraMixin",
-    "EntityRenderDispatcherMixin"
+    "EntityRenderDispatcherMixin",
+    "DeathFlashGuiMixin"
   ],
   "injectors": {
     "defaultRequire": 1

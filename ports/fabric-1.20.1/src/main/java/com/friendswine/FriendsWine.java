@@ -28,6 +28,7 @@ public final class FriendsWine implements ModInitializer {
         return () -> value;
     }
     public static final Supplier<net.minecraft.sounds.SoundEvent> GUEST_STEAL = register(BuiltInRegistries.SOUND_EVENT, "guest_steal", net.minecraft.sounds.SoundEvent.createVariableRangeEvent(new net.minecraft.resources.ResourceLocation(MODID, "guest_steal")));
+    public static final Supplier<net.minecraft.sounds.SoundEvent> GUEST_DEATH_FLASH = register(BuiltInRegistries.SOUND_EVENT, "guest_death_flash", net.minecraft.sounds.SoundEvent.createVariableRangeEvent(new net.minecraft.resources.ResourceLocation(MODID, "guest_death_flash")));
     public static final Supplier<DollBlock> DOLL = register(BuiltInRegistries.BLOCK,"doll",new DollBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).strength(0.5F).sound(SoundType.WOOL).noOcclusion()));
     public static final Supplier<BlockItem> DOLL_ITEM = register(BuiltInRegistries.ITEM,"doll",new BlockItem(DOLL.get(),new Item.Properties()));
     public static final Supplier<RemoteItem> REMOTE = register(BuiltInRegistries.ITEM,"remote",new RemoteItem(new Item.Properties().stacksTo(1)));
@@ -55,5 +56,6 @@ public final class FriendsWine implements ModInitializer {
         ServerWorldEvents.UNLOAD.register((server,level) -> { DollBlockEntity.forgetLevel(level); DollAttraction.releaseLevel(level); });
         EntityTrackingEvents.START_TRACKING.register((entity,player) -> TipsySync.startTracking(player,entity));
         SettingsNetworking.register();
+        GuestDeathNetworking.register();
     }
 }

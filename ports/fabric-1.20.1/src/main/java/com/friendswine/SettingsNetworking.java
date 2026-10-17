@@ -10,19 +10,22 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
 public final class SettingsNetworking {
+    // 网络边界严格检查枚举，不能把恶意／过期客户端提交的无效值默认为合法修改。
+    private static boolean validScope(String scope) { return "NEARBY".equals(scope) || "GLOBAL".equals(scope); }
+    public static DeathFlashScope clientScope=DeathFlashScope.NEARBY;
     public static double clientOrbit=1;
     public static boolean canEdit;
     public static final ResourceLocation STATE=new ResourceLocation("friendswine","settings"), CHANGE=new ResourceLocation("friendswine","orbit_speed");
     private static boolean allowed(ServerPlayer player) { return player.hasPermissions(2) || player.server.isSingleplayerOwner(player.getGameProfile()); }
-    private static void send(ServerPlayer player) { var buf=PacketByteBufs.create(); buf.writeDouble(ServerConfig.ORBIT_SPEED.get()); buf.writeBoolean(allowed(player)); ServerPlayNetworking.send(player,STATE,buf); }
+    private static void send(ServerPlayer player) { var buf=PacketByteBufs.create(); buf.writeDouble(ServerConfig.ORBIT_SPEED.get()); buf.writeBoolean(allowed(player)); buf.writeUtf(ServerConfig.deathFlashScope().name(),16); ServerPlayNetworking.send(player,STATE,buf); }
     private static void broadcast(MinecraftServer server) { server.getPlayerList().getPlayers().forEach(SettingsNetworking::send); }
     public static void register() {
         ServerPlayConnectionEvents.JOIN.register((handler,sender,server)->send(handler.player));
         ServerPlayNetworking.registerGlobalReceiver(CHANGE,(server,player,handler,buf,sender)->{
-            double speed=buf.readDouble();
+            double speed=buf.readDouble(); String scope=buf.readUtf(16);
             server.execute(()->{
-                if (!allowed(player) || !Double.isFinite(speed) || speed<0 || speed>4) { send(player); return; }
-                try { ServerConfig.save(speed); broadcast(server); }
+                if (!allowed(player) || !Double.isFinite(speed) || speed<0 || speed>4 || !validScope(scope)) { send(player); return; }
+                try { ServerConfig.save(speed,DeathFlashScope.valueOf(scope)); broadcast(server); }
                 catch (RuntimeException error) { player.sendSystemMessage(Component.literal("朋友的酒：无法保存服务器设置")); }
             });
         });

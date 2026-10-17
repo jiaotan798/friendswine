@@ -42,7 +42,9 @@ public final class WineGameTests {
         var cookie=net.minecraft.server.network.CommonListenerCookie.createInitial(new com.mojang.authlib.GameProfile(UUID.randomUUID(),"FriendsWineQA"),false);
         var player=new ServerPlayer(server,helper.getLevel(),cookie.gameProfile(),cookie.clientInformation());
         var connection=new net.minecraft.network.Connection(net.minecraft.network.protocol.PacketFlow.SERVERBOUND);
-        new EmbeddedChannel(connection);server.getPlayerList().placeNewPlayer(connection,player,cookie);return player;
+        new EmbeddedChannel(connection);
+        // 模拟连接也必须协商自定义载荷，否则加载器会拒绝新增死亡事件。
+        PartyGuestGameTests.configureDeathConnection(connection); server.getPlayerList().placeNewPlayer(connection,player,cookie);return player;
     }
 
 

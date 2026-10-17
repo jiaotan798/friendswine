@@ -28,3 +28,7 @@ processResources {
 jar { archiveFileName='friendswine-'+mod_version+'-Forge-1.20.1.jar'; manifest { attributes(['MixinConfigs':'friendswine.mixins.json']) }; finalizedBy 'reobfJar' }
 
 jar { exclude 'com/friendswine/*GameTests*.class'; exclude 'data/friendswine/structure/**'; exclude 'data/friendswine/structures/**' }
+
+compileJava.source file('../../mod/src/main/java/com/friendswine/DeathFlashScope.java')
+
+compileJava.source file('../../mod/src/main/java/com/friendswine/DeathFlashTimer.java')

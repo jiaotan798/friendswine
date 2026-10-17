@@ -34,6 +34,7 @@ public final class FriendsWine {
     public static final String MODID = "friendswine";
     private static final DeferredRegister<net.minecraft.sounds.SoundEvent> SOUNDS = DeferredRegister.create(Registries.SOUND_EVENT, MODID);
     public static final DeferredHolder<net.minecraft.sounds.SoundEvent, net.minecraft.sounds.SoundEvent> GUEST_STEAL = SOUNDS.register("guest_steal", () -> net.minecraft.sounds.SoundEvent.createVariableRangeEvent(net.minecraft.resources.Identifier.fromNamespaceAndPath(MODID, "guest_steal")));
+    public static final DeferredHolder<net.minecraft.sounds.SoundEvent, net.minecraft.sounds.SoundEvent> GUEST_DEATH_FLASH = SOUNDS.register("guest_death_flash", () -> net.minecraft.sounds.SoundEvent.createVariableRangeEvent(net.minecraft.resources.Identifier.fromNamespaceAndPath(MODID, "guest_death_flash")));
     private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);
     private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
     private static final DeferredRegister<MobEffect> EFFECTS = DeferredRegister.create(Registries.MOB_EFFECT, MODID);
@@ -71,6 +72,7 @@ public final class FriendsWine {
         container.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
         container.registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC);
         if (net.neoforged.neoforge.gametest.GameTestHooks.isGametestEnabled()) PortGameTests.register(modBus);
+        modBus.addListener(GuestDeathNetworking::register);
         BLOCKS.register(modBus);
         ITEMS.register(modBus);
         EFFECTS.register(modBus);

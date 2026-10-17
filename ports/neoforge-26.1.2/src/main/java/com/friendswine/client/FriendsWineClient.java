@@ -60,6 +60,7 @@ public final class FriendsWineClient {
     /** Client check: start muted, unmute; then mute/unmute RECORDS and press F3+T during playback. */
     private void clientTick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
+        ClientDeathFlash.tick(mc);
         if (lastLevel != mc.level) {
             sounds.values().forEach(DollMusicSound::cancel);
             sounds.clear();
