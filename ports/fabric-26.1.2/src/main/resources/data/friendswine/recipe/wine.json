@@ -1,0 +1,17 @@
+{
+  "type": "friendswine:water_wine",
+  "category": "misc",
+  "pattern": [
+    "WWW",
+    "WBW",
+    "WWW"
+  ],
+  "key": {
+    "W": "minecraft:wheat",
+    "B": "minecraft:potion"
+  },
+  "result": {
+    "id": "friendswine:wine",
+    "count": 1
+  }
+}

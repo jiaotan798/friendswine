@@ -10,6 +10,7 @@ public final class PortGameTests {
     private static final List<Test> TESTS=List.of(
         new Test("playbackandattraction","doll_range",2400,DollGameTests::playbackAndAttraction),
         new Test("remotestages","doll_empty",1180,DollGameTests::remoteStages),
+        new Test("outerformation","doll_empty",400,DollGameTests::outerFormation),
         new Test("distributedslots","doll_empty",400,DollGameTests::distributedSlots),
         new Test("orbitandrelease","doll_empty",1200,DollGameTests::orbitAndRelease),
         new Test("dollanimationpriority","doll_empty",100,WineGameTests::dollAnimationPriority),

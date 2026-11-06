@@ -25,6 +25,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 public final class FriendsWine implements ModInitializer {
     public static final String MODID = "friendswine";
+    public static final Supplier<net.minecraft.world.item.crafting.RecipeSerializer<WineRecipe>> WATER_WINE = register(BuiltInRegistries.RECIPE_SERIALIZER, "water_wine", WineRecipe.SERIALIZER);
     private static <V,T extends V> Supplier<T> register(Registry<V> registry, String id, T value) {
         Registry.register(registry, Identifier.fromNamespaceAndPath(MODID,id),value);
         return () -> value;

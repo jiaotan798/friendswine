@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:iron_block",
+    "minecraft:redstone_block"
+  ],
+  "result": {
+    "id": "friendswine:remote",
+    "count": 1
+  }
+}

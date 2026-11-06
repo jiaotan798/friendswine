@@ -1,0 +1,12 @@
+// 每次使用全新测试世界，避免上轮失败遗留的活动玩偶影响下一轮距离和卸载断言。
+allprojects {
+    tasks.matching { it.name in ['runGameTest', 'runGameTestServer'] }.configureEach {
+        def repoRoot = project.file(project.projectDir.name == 'mod' ? '..' : '../..')
+        def runDir = new File(repoRoot, '.verification/gametest/' + System.currentTimeMillis() + '-' + project.projectDir.name)
+        workingDir(runDir)
+        doFirst {
+            runDir.mkdirs()
+            new File(runDir, 'eula.txt').setText('eula=true\n', 'UTF-8')
+        }
+    }
+}

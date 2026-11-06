@@ -25,6 +25,8 @@ import net.minecraftforge.registries.*;
 @Mod(FriendsWine.MODID)
 public final class FriendsWine {
     public static final String MODID="friendswine";
+    private static final DeferredRegister<net.minecraft.world.item.crafting.RecipeSerializer<?>> RECIPE_SERIALIZERS = DeferredRegister.create(Registries.RECIPE_SERIALIZER, MODID);
+    public static final java.util.function.Supplier<net.minecraft.world.item.crafting.RecipeSerializer<WineRecipe>> WATER_WINE = RECIPE_SERIALIZERS.register("water_wine", () -> WineRecipe.SERIALIZER);
     private static final DeferredRegister<net.minecraft.sounds.SoundEvent> SOUNDS = DeferredRegister.create(Registries.SOUND_EVENT, MODID);
     public static final RegistryObject<net.minecraft.sounds.SoundEvent> GUEST_STEAL = SOUNDS.register("guest_steal", () -> net.minecraft.sounds.SoundEvent.createVariableRangeEvent(new net.minecraft.resources.ResourceLocation(MODID, "guest_steal")));
     public static final RegistryObject<net.minecraft.sounds.SoundEvent> GUEST_DEATH_FLASH = SOUNDS.register("guest_death_flash", () -> net.minecraft.sounds.SoundEvent.createVariableRangeEvent(new net.minecraft.resources.ResourceLocation(MODID, "guest_death_flash")));
@@ -56,7 +58,7 @@ public final class FriendsWine {
     public static final RegistryObject<CreativeModeTab> TAB=TABS.register("main",()->CreativeModeTab.builder().title(Component.translatable("itemGroup.friendswine")).icon(()->new ItemStack(DOLL_ITEM.get())).displayItems((params,out)->{out.accept(DOLL_ITEM.get());out.accept(REMOTE.get());out.accept(WINE.get());out.accept(KASUMI_SPAWN_EGG.get());out.accept(EMMA_SPAWN_EGG.get());out.accept(AMIYA_SPAWN_EGG.get());}).build());
     public static final RegistryObject<BlockEntityType<DollBlockEntity>> DOLL_BLOCK_ENTITY=BES.register("doll",()->BlockEntityType.Builder.of(DollBlockEntity::new,DOLL.get()).build(null));
     public FriendsWine() {
-        var bus=FMLJavaModLoadingContext.get().getModEventBus(); BLOCKS.register(bus); ITEMS.register(bus); EFFECTS.register(bus); SOUNDS.register(bus); TABS.register(bus); BES.register(bus); ENTITIES.register(bus);
+        var bus=FMLJavaModLoadingContext.get().getModEventBus(); RECIPE_SERIALIZERS.register(bus); BLOCKS.register(bus); ITEMS.register(bus); EFFECTS.register(bus); SOUNDS.register(bus); TABS.register(bus); BES.register(bus); ENTITIES.register(bus);
         bus.addListener((net.minecraftforge.event.entity.EntityAttributeCreationEvent event) -> { event.put(KASUMI.get(), PartyGuestEntity.createAttributes().build()); event.put(EMMA.get(), PartyGuestEntity.createAttributes().build()); event.put(AMIYA.get(), PartyGuestEntity.createAttributes().build()); });
         bus.addListener((net.minecraftforge.event.entity.SpawnPlacementRegisterEvent event) -> { event.register(KASUMI.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, PartyGuestEntity::checkNaturalSpawn, net.minecraftforge.event.entity.SpawnPlacementRegisterEvent.Operation.REPLACE); event.register(EMMA.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, PartyGuestEntity::checkNaturalSpawn, net.minecraftforge.event.entity.SpawnPlacementRegisterEvent.Operation.REPLACE); event.register(AMIYA.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, PartyGuestEntity::checkNaturalSpawn, net.minecraftforge.event.entity.SpawnPlacementRegisterEvent.Operation.REPLACE); });
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT,ClientConfig.SPEC);

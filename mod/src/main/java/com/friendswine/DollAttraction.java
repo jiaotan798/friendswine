@@ -20,7 +20,8 @@ import net.neoforged.neoforge.event.tick.LevelTickEvent;
 final class DollAttraction {
     static final double SEEK_RADIUS = 50;
     private static final double PULL_RADIUS = 10;
-    private static final double STOP_RADIUS = 5;
+    // 聚集与绕圈共用十格站位半径；寻路搜索仍为五十格，视觉形变范围仍为十格。
+    private static final double STOP_RADIUS = 10;
     private static final double SPACING = 1.25;
     private static final double GAP = 0.25;
     private static final double ARRIVAL = 0.18;
@@ -130,18 +131,23 @@ final class DollAttraction {
         }
     }
 
+    /** 在十格圆盘内选择安全、不重叠且优先填充内圈的站位，稳定站位继续复用。 */
     private static Vec3 findSlot(ServerLevel level, Mob mob, BlockPos owner) {
         Vec3 best = null;
-        double bestSpace = -1;
+        double bestRadius = Double.MAX_VALUE;
         double bestTravel = Double.MAX_VALUE;
-        double radius = STOP_RADIUS - mob.getBbWidth() / 2.0;
+        double radius = STOP_RADIUS - mob.getBbWidth() / Math.sqrt(2);
         if (radius <= 0) return null;
-        // ponytail: finite hex grid plus greedy spacing; dense crowds may have no collision-free slot.
-        for (int row = -4; row <= 4; row++) {
-            for (int column = -4; column <= 4; column++) {
+        // 空间不足时允许没有站位；仍通过原版碰撞和寻路接近，不传送或穿墙。
+        // 六角网格的行距小于列距，按行距计算范围，保证十格圆盘全部可搜索。
+        int extent = (int) Math.ceil(STOP_RADIUS / (SPACING * Math.sqrt(3) / 2));
+        for (int row = -extent; row <= extent; row++) {
+            for (int column = -extent; column <= extent; column++) {
                 double x = (column + ((row & 1) == 0 ? 0 : 0.5)) * SPACING;
                 double z = row * SPACING * Math.sqrt(3) / 2;
-                if (x * x + z * z > radius * radius) continue;
+                // 外接圆覆盖绕圈时的所有转角，避免宽体型在转动后切入玩偶。
+                double dollClearance = (mob.getBbWidth() + 1) / Math.sqrt(2) + GAP + ARRIVAL;
+                if (x * x + z * z > radius * radius || x * x + z * z < dollClearance * dollClearance) continue;
                 Vec3 target = null;
                 for (int dy : new int[]{0, 1, -1, 2, -2}) {
                     Vec3 candidate = new Vec3(owner.getX() + 0.5 + x, owner.getY() + dy, owner.getZ() + 0.5 + z);
@@ -152,26 +158,29 @@ final class DollAttraction {
                     }
                 }
                 if (target == null) continue;
-                double space = x * x + z * z;
+                double radialDistance = x * x + z * z;
                 boolean occupied = false;
                 for (var entry : CONTROLLED.entrySet()) {
                     Control other = entry.getValue();
                     if (entry.getKey() == mob || entry.getKey().level() != level || !other.owner.equals(owner)
                             || other.target == null) continue;
-                    // Both mobs may stop up to ARRIVAL away from their target; reserve that error too.
-                    if (boxAt(mob, target).inflate(GAP + 2 * ARRIVAL).intersects(boxAt(entry.getKey(), other.target))) {
+                    // 外接圆间距同时保留双方到站误差，绕圈任意转角都不能让碰撞箱互相挤压。
+                    double padding = GAP + 2 * ARRIVAL;
+                    double spacing = (mob.getBbWidth() + entry.getKey().getBbWidth()) / Math.sqrt(2) + padding;
+                    double dx = target.x - other.target.x, dz = target.z - other.target.z;
+                    if (target.y < other.target.y + entry.getKey().getBbHeight() + padding
+                            && other.target.y < target.y + mob.getBbHeight() + padding
+                            && dx * dx + dz * dz < spacing * spacing) {
                         occupied = true;
                         break;
                     }
-                    double dx = target.x - other.target.x;
-                    double dz = target.z - other.target.z;
-                    space = Math.min(space, dx * dx + dz * dz);
                 }
                 if (occupied) continue;
                 double travel = mob.position().distanceToSqr(target);
-                if (space > bestSpace + 1.0e-6 || Math.abs(space - bestSpace) <= 1.0e-6 && travel < bestTravel) {
+                // 先选更靠近玩偶的安全圈，同半径再选路程更短者；已有有效站位不重新分配。
+                if (radialDistance < bestRadius - 1.0e-6 || Math.abs(radialDistance - bestRadius) <= 1.0e-6 && travel < bestTravel) {
                     best = target;
-                    bestSpace = space;
+                    bestRadius = radialDistance;
                     bestTravel = travel;
                 }
             }

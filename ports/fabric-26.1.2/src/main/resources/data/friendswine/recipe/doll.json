@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SWS",
+    "WRW",
+    " W "
+  ],
+  "key": {
+    "S": "minecraft:string",
+    "W": "#minecraft:wool",
+    "R": "minecraft:redstone"
+  },
+  "result": {
+    "id": "friendswine:doll",
+    "count": 1
+  }
+}

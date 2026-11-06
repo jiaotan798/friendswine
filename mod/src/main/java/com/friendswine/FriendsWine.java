@@ -31,6 +31,8 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 @Mod(FriendsWine.MODID)
 public final class FriendsWine {
     public static final String MODID = "friendswine";
+    private static final DeferredRegister<net.minecraft.world.item.crafting.RecipeSerializer<?>> RECIPE_SERIALIZERS = DeferredRegister.create(Registries.RECIPE_SERIALIZER, MODID);
+    public static final java.util.function.Supplier<net.minecraft.world.item.crafting.RecipeSerializer<WineRecipe>> WATER_WINE = RECIPE_SERIALIZERS.register("water_wine", () -> WineRecipe.SERIALIZER);
     private static final DeferredRegister<net.minecraft.sounds.SoundEvent> SOUNDS = DeferredRegister.create(Registries.SOUND_EVENT, MODID);
     public static final DeferredHolder<net.minecraft.sounds.SoundEvent, net.minecraft.sounds.SoundEvent> GUEST_STEAL = SOUNDS.register("guest_steal", () -> net.minecraft.sounds.SoundEvent.createVariableRangeEvent(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(MODID, "guest_steal")));
     public static final DeferredHolder<net.minecraft.sounds.SoundEvent, net.minecraft.sounds.SoundEvent> GUEST_DEATH_FLASH = SOUNDS.register("guest_death_flash", () -> net.minecraft.sounds.SoundEvent.createVariableRangeEvent(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(MODID, "guest_death_flash")));
@@ -75,6 +77,7 @@ public final class FriendsWine {
         container.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
         container.registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC);
         modBus.addListener(GuestDeathNetworking::register);
+        RECIPE_SERIALIZERS.register(modBus);
         BLOCKS.register(modBus);
         ITEMS.register(modBus);
         EFFECTS.register(modBus);

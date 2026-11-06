@@ -198,7 +198,14 @@ compileJava.source file('../../mod/src/main/java/com/friendswine/JellyAnimation.
 compileJava.source file('../../mod/src/main/java/com/friendswine/GuestAnimation.java')
 compileJava.source file('../../mod/src/main/java/com/friendswine/GuestVariant.java')
 sourceSets.main.resources.srcDir('../../mod/src/main/resources')
-processResources { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
+processResources {
+    // 三种配方使用当前版本的材料与结果格式，不复制共用目录中的其他版本配方。
+    exclude { details ->
+        def p = details.file.toPath().toAbsolutePath().normalize().toString().replace('\\', '/')
+        p.contains('/mod/src/main/resources/data/friendswine/recipe/') || p.contains('/mod/src/main/resources/data/friendswine/advancement/recipes/')
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
 
 compileJava.source file('../../mod/src/main/java/com/friendswine/DeathFlashScope.java')
 

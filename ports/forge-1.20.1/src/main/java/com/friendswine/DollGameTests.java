@@ -28,6 +28,7 @@ public final class DollGameTests {
     @SuppressWarnings("removal")
     @GameTest(templateNamespace = "friendswine", template = "doll_range", batch = "friendswine-playback", timeoutTicks = 2400)
     public static void playbackAndAttraction(GameTestHelper helper) {
+        resetActiveDolls(helper);
         PartyGuestGameTests.clean(helper);
         helper.onEachTick(() -> PartyGuestGameTests.clean(helper));
         for (BlockPos pos : BlockPos.betweenClosed(0, 0, 0, 63, 0, 23)) {
@@ -76,8 +77,8 @@ public final class DollGameTests {
                     assertHorizontalStill(helper, outside, outsideStart, "A mob beyond 50 blocks must not move");
                     helper.assertTrue(seeker.getNavigation().getPath() != null && !seeker.getNavigation().isDone(),
                             "A mob between 10 and 50 blocks must receive a real navigation path");
-                    helper.assertTrue(pulled.getDeltaMovement().dot(center.subtract(pulled.position())) > 0,
-                            "A mob between 5 and 10 blocks must gain inward velocity");
+                    helper.assertTrue(pulled.getDeltaMovement().horizontalDistanceSqr() > 0,
+                            "十格内生物必须向分配站位移动");
                     helper.assertTrue(inside.getDeltaMovement().horizontalDistanceSqr() > 0,
                             "A mob already within five blocks must still approach its spread-out slot");
 
@@ -285,6 +286,8 @@ public final class DollGameTests {
 
     @GameTest(templateNamespace = "friendswine", template = "doll_empty", batch = "friendswine-formation", timeoutTicks = 400)
     public static void distributedSlots(GameTestHelper helper) {
+        resetActiveDolls(helper);
+        checkCraftingRecipes(helper);
         PartyGuestGameTests.clean(helper);
         helper.onEachTick(() -> PartyGuestGameTests.clean(helper));
         for (BlockPos pos : BlockPos.betweenClosed(0, 0, 0, 31, 0, 23)) helper.setBlock(pos, Blocks.STONE);
@@ -299,14 +302,21 @@ public final class DollGameTests {
         pigs[pigs.length - 1] = pig(helper, new Vec3(14.5, 1, 12.5), true);
         Vec3 center = Vec3.atCenterOf(helper.absolutePos(pos));
         Vec3[] settled = new Vec3[pigs.length];
+        Vec3[] origins = java.util.Arrays.stream(pigs).map(Pig::position).toArray(Vec3[]::new);
+        int[] quietTicks = {0};
         helper.startSequence()
                 .thenExecute(() -> { doll.startPlaying(); PartyGuestGameTests.clean(helper); })
                 .thenWaitUntil(() -> {
-                    for (Pig pig : pigs) {
+                    // 确认外侧生物已实际移动且连续停稳，不能把初始零速度或转向瞬间当作到站。
+                    boolean quiet = true;
+                    for (int i = 0; i < pigs.length; i++) {
+                        Pig pig = pigs[i];
                         double dx = pig.getX() - center.x, dz = pig.getZ() - center.z;
-                        helper.assertTrue(dx * dx + dz * dz <= 25 && pig.getDeltaMovement().horizontalDistanceSqr() < 0.0001,
-                                "All attracted pigs must settle inside the horizontal five-block disk");
+                        quiet &= dx * dx + dz * dz <= 100 && pig.getDeltaMovement().horizontalDistanceSqr() < 0.0001
+                                && (i == pigs.length - 1 || pig.position().distanceToSqr(origins[i]) > 0.09);
                     }
+                    quietTicks[0] = quiet ? quietTicks[0] + 1 : 0;
+                    helper.assertTrue(quietTicks[0] >= 5, "生物必须实际移动到十格安全站位并连续停稳五刻：" + java.util.Arrays.toString(java.util.Arrays.stream(pigs).map(p -> p.isAlive() + "/" + p.position().subtract(center) + "/" + p.getDeltaMovement()).toArray()));
                     for (int i = 0; i < pigs.length; i++) {
                         for (int j = i + 1; j < pigs.length; j++) {
                             helper.assertFalse(pigs[i].getBoundingBox().inflate(0.25).intersects(pigs[j].getBoundingBox()),
@@ -338,6 +348,7 @@ public final class DollGameTests {
     @SuppressWarnings("removal")
     @GameTest(templateNamespace = "friendswine", template = "doll_empty", batch = "friendswine-orbit", timeoutTicks = 1200)
     public static void orbitAndRelease(GameTestHelper helper) {
+        resetActiveDolls(helper);
         PartyGuestGameTests.clean(helper);
         helper.onEachTick(() -> PartyGuestGameTests.clean(helper));
         for (BlockPos floor : BlockPos.betweenClosed(0, 0, 0, 31, 0, 23)) helper.setBlock(floor, Blocks.STONE);
@@ -369,7 +380,7 @@ public final class DollGameTests {
                 double angle = Math.atan2(z, x);
                 turns[i] += Math.atan2(Math.sin(angle - previous[i]), Math.cos(angle - previous[i]));
                 previous[i] = angle;
-                helper.assertTrue(x * x + z * z <= 26, "Orbit must remain inside the five-block formation");
+                helper.assertTrue(x * x + z * z <= 101, "绕圈必须保持在十格站位范围内（含跟随误差）");
                 helper.assertFalse(helper.getLevel().getBlockCollisions(mobs[i], mobs[i].getBoundingBox()).iterator().hasNext(),
                         "Orbit must respect native block collision");
             }
@@ -377,7 +388,7 @@ public final class DollGameTests {
         helper.startSequence().thenExecute(() -> { doll.startPlaying(); PartyGuestGameTests.clean(helper); }).thenWaitUntil(() -> {
             for (Mob mob : mobs) helper.assertTrue(mob.position().distanceToSqr(center) < 25
                             && mob.getDeltaMovement().horizontalDistanceSqr() < 0.0001,
-                    "All mobs must settle before orbit starts");
+                    "起圈前停稳：" + java.util.Arrays.toString(java.util.Arrays.stream(mobs).map(m -> m.isAlive() + "/" + m.position().subtract(center) + "/" + m.getDeltaMovement()).toArray()));
         }).thenExecute(() -> {
             long song = doll.getStartTick();
             doll.cycleRemote(); PartyGuestGameTests.clean(helper);
@@ -432,7 +443,7 @@ public final class DollGameTests {
             }
         }).thenIdle(5).thenExecute(() -> {
             for (Mob mob : mobs) helper.assertTrue(mob.getDeltaMovement().horizontalDistanceSqr() < 1e-8,
-                    "Unloaded dolls must not apply orbit force");
+                    "卸载后不应残留绕圈力：motion=" + mob.getDeltaMovement() + " position=" + mob.position() + " active=" + DollBlockEntity.getActiveDolls(helper.getLevel()).size());
             doll.clearRemoved();
             helper.assertTrue(doll.getMode() == DollBlockEntity.ORBIT && doll.isRotating(),
                     "Reloading must retain orbit and self-rotation");
@@ -517,6 +528,73 @@ public final class DollGameTests {
     private static void assertHorizontalStill(GameTestHelper helper, Pig pig, Vec3 start, String message) {
         double dx = pig.getX() - start.x;
         double dz = pig.getZ() - start.z;
-        helper.assertTrue(dx * dx + dz * dz < 1.0e-8 && pig.getDeltaMovement().horizontalDistanceSqr() < 1.0e-8, message);
+        helper.assertTrue(dx * dx + dz * dz < 1.0e-8 && pig.getDeltaMovement().horizontalDistanceSqr() < 1.0e-8, message + "; start=" + start + "; now=" + pig.position() + "; motion=" + pig.getDeltaMovement() + "; colliders=" + helper.getLevel().getEntities(pig, pig.getBoundingBox().inflate(0.1)).stream().map(e -> e.getType() + "/" + e.position()).toList());
     }
+    /** 用实际加载的配方核对混色羊毛、无序遥控器及水瓶边界，防止跨版本资源格式失效。 */
+    private static void checkCraftingRecipes(GameTestHelper helper) {
+        var doll = new java.util.ArrayList<>(java.util.Collections.nCopies(9, ItemStack.EMPTY));
+        for (int i : new int[]{1, 3, 5, 7}) doll.set(i, new ItemStack(i == 1 ? Items.RED_WOOL : Items.BLUE_WOOL));
+        doll.set(0, new ItemStack(Items.STRING)); doll.set(2, new ItemStack(Items.STRING));
+        doll.set(4, new ItemStack(Items.REDSTONE));
+        helper.assertTrue(craft(helper, 3, doll).is(FriendsWine.DOLL_ITEM.get()), "不同颜色羊毛可以合成一个玩偶");
+        var remote = java.util.List.of(new ItemStack(Items.REDSTONE_BLOCK), ItemStack.EMPTY, ItemStack.EMPTY, new ItemStack(Items.IRON_BLOCK));
+        helper.assertTrue(craft(helper, 2, remote).is(FriendsWine.REMOTE.get()), "遥控器允许二乘二无序合成");
+        var wine = new java.util.ArrayList<ItemStack>();
+        for (int i = 0; i < 9; i++) wine.add(new ItemStack(Items.WHEAT));
+        wine.set(4, net.minecraft.world.item.alchemy.PotionUtils.setPotion(new ItemStack(Items.POTION), net.minecraft.world.item.alchemy.Potions.WATER));
+        ItemStack result = craft(helper, 3, wine);
+        helper.assertTrue(result.is(FriendsWine.WINE.get()) && result.getCount() == 1, "八小麦围普通水瓶产出一瓶酒");
+        for (var invalid : java.util.List.of(net.minecraft.world.item.alchemy.PotionUtils.setPotion(new ItemStack(Items.POTION), net.minecraft.world.item.alchemy.Potions.AWKWARD), net.minecraft.world.item.alchemy.PotionUtils.setPotion(new ItemStack(Items.POTION), net.minecraft.world.item.alchemy.Potions.POISON), new ItemStack(Items.GLASS_BOTTLE), new ItemStack(Items.SPLASH_POTION))) {
+            wine.set(4, invalid);
+            helper.assertTrue(craft(helper, 3, wine).isEmpty(), "药水、空瓶及喷溅药水不能代替普通水瓶");
+        }
+        wine.set(4, net.minecraft.world.item.alchemy.PotionUtils.setPotion(new ItemStack(Items.POTION), net.minecraft.world.item.alchemy.Potions.WATER)); wine.set(0, ItemStack.EMPTY);
+        helper.assertTrue(craft(helper, 3, wine).isEmpty(), "缺少小麦时不能合成酒");
+    }
+
+    private static ItemStack craft(GameTestHelper helper, int width, java.util.List<ItemStack> stacks) {
+        var menu = new net.minecraft.world.inventory.AbstractContainerMenu(null, -1) {
+            public ItemStack quickMoveStack(net.minecraft.world.entity.player.Player player, int slot) { return ItemStack.EMPTY; }
+            public boolean stillValid(net.minecraft.world.entity.player.Player player) { return true; }
+        };
+        var input = new net.minecraft.world.inventory.TransientCraftingContainer(menu, width, width);
+        for (int i = 0; i < stacks.size(); i++) input.setItem(i, stacks.get(i));
+        return helper.getLevel().getRecipeManager().getRecipeFor(net.minecraft.world.item.crafting.RecipeType.CRAFTING, input, helper.getLevel())
+                .map(r -> r.assemble(input, helper.getLevel().registryAccess())).orElse(ItemStack.EMPTY);
+    }
+
+    /** 内圈被实体方块挡住时，必须使用五至十格外圈，仍保持原版方块碰撞。 */
+    @GameTest(template = "doll_empty", batch = "friendswine-outer-formation", timeoutTicks = 400)
+    public static void outerFormation(GameTestHelper helper) {
+        resetActiveDolls(helper);
+        PartyGuestGameTests.clean(helper);
+        helper.onEachTick(() -> PartyGuestGameTests.clean(helper));
+        for (BlockPos floor : BlockPos.betweenClosed(0, 0, 0, 31, 0, 23)) helper.setBlock(floor, Blocks.STONE);
+        for (int x = 7; x <= 17; x++) for (int z = 7; z <= 17; z++) {
+            if ((x - 12) * (x - 12) + (z - 12) * (z - 12) <= 25)
+                for (int y = 1; y <= 4; y++) helper.setBlock(new BlockPos(x, y, z), Blocks.STONE);
+        }
+        BlockPos pos = new BlockPos(12, 1, 12);
+        helper.setBlock(pos, FriendsWine.DOLL.get());
+        DollBlockEntity doll = (DollBlockEntity) helper.getBlockEntity(pos);
+        Pig pig = pig(helper, new Vec3(20.5, 1, 12.5), true);
+        Vec3 start = pig.position(), center = Vec3.atCenterOf(helper.absolutePos(pos));
+        doll.startPlaying();
+        helper.startSequence().thenWaitUntil(() -> {
+            double x = pig.getX() - center.x, z = pig.getZ() - center.z;
+            helper.assertTrue(pig.position().distanceToSqr(start) > 0.09 && x * x + z * z > 25
+                    && x * x + z * z <= 100 && pig.getDeltaMovement().horizontalDistanceSqr() < 0.0001,
+                    "内圈阻塞时，生物应移动到五至十格的安全外圈并停稳");
+            helper.assertFalse(helper.getLevel().getBlockCollisions(pig, pig.getBoundingBox()).iterator().hasNext(), "外圈站位不能穿入内圈障碍");
+        }).thenExecute(doll::stopPlaying).thenSucceed();
+    }
+
+    /** Forge 1.20.1 的各批次共享世界；清理前一场景留下的活动玩偶，避免五十格作用范围串场。 */
+    private static void resetActiveDolls(GameTestHelper helper) {
+        for (DollBlockEntity doll : DollBlockEntity.getActiveDolls(helper.getLevel())) doll.stopPlaying();
+        // 场景脚本铺设六十四格地面，超出模板清理边界；直接移除旧生物，避免死亡动画继续推挤新生物。
+        var bounds = new net.minecraft.world.phys.AABB(helper.absolutePos(BlockPos.ZERO), helper.absolutePos(new BlockPos(64, 16, 24))).inflate(2);
+        for (Mob mob : helper.getLevel().getEntitiesOfClass(Mob.class, bounds)) mob.discard();
+    }
+
 }
