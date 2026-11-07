@@ -197,7 +197,7 @@ node .\assets\source\check-resources.mjs
 - jiaotan_：[bilibili](https://space.bilibili.com/409729840?) · [抖音](https://v.douyin.com/KDs5ZxJh5V8/)
 - 你个人机cc：[bilibili](https://space.bilibili.com/400763031?) · [抖音](https://v.douyin.com/iyCu2FJYTGc/)
 
-**素材来源**：模型、音乐、贴图及 PNG／GIF 来自项目提供的原始素材，原始副本随仓库保存。
+仓库保存了制作模组时使用的模型、音乐、贴图及 PNG／GIF 原件。
 
 **模组许可**：沿用 **All Rights Reserved** 声明，源码托管不修改既有许可。
 
