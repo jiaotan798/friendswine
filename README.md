@@ -184,6 +184,12 @@ node .\assets\source\check-resources.mjs
 
 `assets/source/export-rest-mesh.js` 在 Blockbench 的 `execute_script` 中作为函数体运行，读取停止状态的原模型并返回网格，不修改模型。
 
+## 反馈
+
+在 QQ 搜索群号 **873511838**，或扫描下方二维码加入「mc模组问题反馈群」。也可以在本仓库的 **Issues** 提交问题。反馈时请附上模组版本、Minecraft 版本、加载器和复现步骤。
+
+<img src=".github/feedback-qq.png" alt="mc模组问题反馈群二维码，群号 873511838" width="220">
+
 ## 署名与许可
 
 共创作者：jiaotan_、你个人机cc。
