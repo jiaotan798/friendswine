@@ -1,10 +1,10 @@
 # 《朋友的酒》
 
-> 放下玩偶播歌，附近生物会靠过来，随着音乐回弹、旋转或绕圈。**v0.1.19** 加入玩偶、遥控器和朋友的酒的生存合成，并将生物聚集与绕圈的站位半径扩大到 10 格。
+> 放下玩偶播歌，附近生物会靠过来，随着音乐回弹、旋转或绕圈。**v0.2.0** 更新游戏内「模组」详情页的介绍，补齐玩法和问题反馈入口。
 
 ## 下载与安装
 
-从 [v0.1.19 Release](https://github.com/jiaotan798/friendswine/releases/tag/v0.1.19) 下载与下表匹配的 `.jar`。
+从 [v0.2.0 Release](https://github.com/jiaotan798/friendswine/releases/tag/v0.2.0) 下载与下表匹配的 `.jar`。
 
 | Minecraft | 加载器 | 安装位置 | 前置模组 |
 | --- | --- | --- | --- |
@@ -15,7 +15,7 @@
 | 26.1.2 | NeoForge 26.1.2.71 或更高 | 客户端及服务端 | 无 |
 | 26.1.2 | Fabric Loader 0.18.4 或更高 | 客户端及服务端 | Fabric API 0.149.0+26.1.2 或更高 |
 
-把匹配的 JAR 和所需前置模组放进对应实例的 `mods` 目录。Java 版本、详细安装步骤及联机和升级要求见[安装指南](https://github.com/jiaotan798/friendswine/releases/download/v0.1.19/INSTALL.txt)。
+把匹配的 JAR 和所需前置模组放进对应实例的 `mods` 目录。搭配《烧心琵琶曲》时请使用 [0.3.2](https://github.com/jiaotan798/shaoxinpipaqu/releases/tag/v0.3.2)。Java 版本、联机和升级要求见[安装指南](https://github.com/jiaotan798/friendswine/releases/download/v0.2.0/INSTALL.txt)。
 
 ## 玩法
 

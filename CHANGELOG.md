@@ -2,6 +2,10 @@
 
 六个 Java 目标同步以下改动。完整规则见[玩法说明](docs/完整玩法说明.md)，历次安装包见 [GitHub Releases](https://github.com/jiaotan798/friendswine/releases)。
 
+## 0.2.0
+
+六个 Java 端口更新游戏内模组简介，同步现行玩法并加入问题反馈入口。 [验证记录](validation/0.2.0.md)
+
 ## 0.1.19
 
 新增玩偶、遥控器和朋友的酒的生存合成。聚集与绕圈的站位半径扩大到 10 格，有安全空间时优先使用内圈，原有有效站位继续沿用。 [验证记录](validation/0.1.19.md)
