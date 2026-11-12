@@ -1,0 +1,256 @@
+{
+  "version": "0.2.1",
+  "client_test_build": "0.2.0 unreleased fix",
+  "release_comparison": "Only version metadata differs; all code and other resources byte-identical",
+  "passed": 23,
+  "screenshots": 184,
+  "max_endpoint_error_blocks": 7.539457464619588e-07,
+  "jars": [
+    {
+      "target": "fabric-1.21.1",
+      "name": "friendswine-0.2.1-Fabric-1.21.1.jar",
+      "bytes": 6018962,
+      "sha256": "38e8300959481b629c812b05f67aea248663e992359b8ea1070fcacdd0c9d38b",
+      "tested_sha256": "fa2de8806b2ddba23e3fd3b3e06c1572ec750ae3dbb7032211f9203bae206461",
+      "changed_entries": [
+        "fabric.mod.json"
+      ]
+    },
+    {
+      "target": "forge-1.20.1",
+      "name": "friendswine-0.2.1-Forge-1.20.1.jar",
+      "bytes": 6015398,
+      "sha256": "704da3d02d04796a1782d2dd26ed42fb5f4d5ee40cc1350724fde3ae43d72459",
+      "tested_sha256": "7e40900644cefa1e17e733d6899546b2383f51c016141763b220779666839d0d",
+      "changed_entries": [
+        "META-INF/mods.toml"
+      ]
+    },
+    {
+      "target": "fabric-1.20.1",
+      "name": "friendswine-0.2.1-Fabric-1.20.1.jar",
+      "bytes": 6014001,
+      "sha256": "269ec923b9d39d97d6dea5910120765ea628e4db6db7f35cc722b5528026e533",
+      "tested_sha256": "cc3932a5747fe18c5f72c215efd0d1227cd10e9f916460df1bf63d2c70e5e9c7",
+      "changed_entries": [
+        "fabric.mod.json"
+      ]
+    },
+    {
+      "target": "neoforge-26.1.2",
+      "name": "friendswine-0.2.1-NeoForge-26.1.2.jar",
+      "bytes": 6006716,
+      "sha256": "1326a32ca349357cb0ebe3b7154d54352336e4875aa20255612186f8ddde79e3",
+      "tested_sha256": "7bdf641044c152683a4b0e1315e8f95aa5eda6ea9bfa03377196b0d29d91b6d2",
+      "changed_entries": [
+        "META-INF/neoforge.mods.toml"
+      ]
+    },
+    {
+      "target": "fabric-26.1.2",
+      "name": "friendswine-0.2.1-Fabric-26.1.2.jar",
+      "bytes": 6029719,
+      "sha256": "0232d47bea41c2d2f23a323481f5d297cc83b8aada99985bcb844da90b9bc44b",
+      "tested_sha256": "bb627a41b5d8d4b05964cfaf0ff200cf0b08268c6ccd9f3beb16afad090670c6",
+      "changed_entries": [
+        "fabric.mod.json"
+      ]
+    },
+    {
+      "target": "neoforge-1.21.1",
+      "name": "friendswine-0.2.1-NeoForge-1.21.1.jar",
+      "bytes": 6002779,
+      "sha256": "7d96a7df0ffed39d2d0c59444ae775e3aa89346eca681ece0fccc918d36494e4",
+      "tested_sha256": "e55a417df0dbc441293f5a0693cea232a1adbe6042a23299d6316252e6bcd88e",
+      "changed_entries": [
+        "META-INF/neoforge.mods.toml"
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "target": "fabric-1.21.1",
+      "ysm": false,
+      "shader": null,
+      "status": "PASS",
+      "maxError": 5.462855929083633e-07,
+      "screenshots": 8
+    },
+    {
+      "target": "fabric-1.21.1",
+      "ysm": true,
+      "shader": null,
+      "status": "PASS",
+      "maxError": 5.462855929083633e-07,
+      "screenshots": 8
+    },
+    {
+      "target": "fabric-1.21.1",
+      "ysm": true,
+      "shader": "unbound",
+      "status": "PASS",
+      "maxError": 5.057621821307283e-07,
+      "screenshots": 8
+    },
+    {
+      "target": "fabric-1.21.1",
+      "ysm": true,
+      "shader": "bsl",
+      "status": "PASS",
+      "maxError": 5.364418029785156e-07,
+      "screenshots": 8
+    },
+    {
+      "target": "forge-1.20.1",
+      "ysm": false,
+      "shader": null,
+      "status": "PASS",
+      "maxError": 5.331201499700045e-07,
+      "screenshots": 8
+    },
+    {
+      "target": "forge-1.20.1",
+      "ysm": true,
+      "shader": null,
+      "status": "PASS",
+      "maxError": 5.462855929083633e-07,
+      "screenshots": 8
+    },
+    {
+      "target": "forge-1.20.1",
+      "ysm": true,
+      "shader": "unbound",
+      "status": "PASS",
+      "maxError": 5.339525004377638e-07,
+      "screenshots": 8
+    },
+    {
+      "target": "forge-1.20.1",
+      "ysm": true,
+      "shader": "bsl",
+      "status": "PASS",
+      "maxError": 5.462855929083633e-07,
+      "screenshots": 8
+    },
+    {
+      "target": "fabric-1.20.1",
+      "ysm": false,
+      "shader": null,
+      "status": "PASS",
+      "maxError": 5.462855929083633e-07,
+      "screenshots": 8
+    },
+    {
+      "target": "fabric-1.20.1",
+      "ysm": true,
+      "shader": null,
+      "status": "PASS",
+      "maxError": 5.462855929083633e-07,
+      "screenshots": 8
+    },
+    {
+      "target": "fabric-1.20.1",
+      "ysm": true,
+      "shader": "unbound",
+      "status": "PASS",
+      "maxError": 5.057621821307283e-07,
+      "screenshots": 8
+    },
+    {
+      "target": "fabric-1.20.1",
+      "ysm": true,
+      "shader": "bsl",
+      "status": "PASS",
+      "maxError": 7.539457464619588e-07,
+      "screenshots": 8
+    },
+    {
+      "target": "neoforge-26.1.2",
+      "ysm": false,
+      "shader": null,
+      "status": "PASS",
+      "maxError": 5.057621821307283e-07,
+      "screenshots": 8
+    },
+    {
+      "target": "neoforge-26.1.2",
+      "ysm": true,
+      "shader": null,
+      "status": "PASS",
+      "maxError": 5.364418029785156e-07,
+      "screenshots": 8
+    },
+    {
+      "target": "neoforge-26.1.2",
+      "ysm": true,
+      "shader": "unbound",
+      "status": "PASS",
+      "maxError": 7.372687385590661e-07,
+      "screenshots": 8
+    },
+    {
+      "target": "neoforge-26.1.2",
+      "ysm": true,
+      "shader": "bsl",
+      "status": "PASS",
+      "maxError": 5.057621821307283e-07,
+      "screenshots": 8
+    },
+    {
+      "target": "fabric-26.1.2",
+      "ysm": false,
+      "shader": null,
+      "status": "PASS",
+      "maxError": 5.057621821307283e-07,
+      "screenshots": 8
+    },
+    {
+      "target": "fabric-26.1.2",
+      "ysm": false,
+      "shader": "unbound",
+      "status": "PASS",
+      "maxError": 5.462855929083633e-07,
+      "screenshots": 8
+    },
+    {
+      "target": "fabric-26.1.2",
+      "ysm": false,
+      "shader": "bsl",
+      "status": "PASS",
+      "maxError": 5.462855929083633e-07,
+      "screenshots": 8
+    },
+    {
+      "target": "neoforge-1.21.1",
+      "ysm": false,
+      "shader": null,
+      "status": "PASS",
+      "maxError": 5.840038639982171e-07,
+      "screenshots": 8
+    },
+    {
+      "target": "neoforge-1.21.1",
+      "ysm": true,
+      "shader": null,
+      "status": "PASS",
+      "maxError": 5.364418029785156e-07,
+      "screenshots": 8
+    },
+    {
+      "target": "neoforge-1.21.1",
+      "ysm": true,
+      "shader": "unbound",
+      "status": "PASS",
+      "maxError": 5.331201499700045e-07,
+      "screenshots": 8
+    },
+    {
+      "target": "neoforge-1.21.1",
+      "ysm": true,
+      "shader": "bsl",
+      "status": "PASS",
+      "maxError": 5.840038639982171e-07,
+      "screenshots": 8
+    }
+  ]
+}

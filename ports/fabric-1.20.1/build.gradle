@@ -15,6 +15,8 @@ java { toolchain.languageVersion = JavaLanguageVersion.of(21) }
 tasks.withType(JavaExec).configureEach { javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(17) } }
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8'; options.release = 17 }
 compileJava.source file('../../mod/src/main/java/com/friendswine/JellyAnimation.java')
+// 六端共用拴绳的坐标补偿，避免不同移植端使用不同动画矩阵。
+compileJava.source file('../../mod/src/main/java/com/friendswine/client/LeashAnimation.java')
 compileJava.source file('../../mod/src/main/java/com/friendswine/GuestAnimation.java')
 compileJava.source file('../../mod/src/main/java/com/friendswine/GuestVariant.java')
 sourceSets.main.resources.srcDir('../../mod/src/main/resources')

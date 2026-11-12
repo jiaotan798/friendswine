@@ -2,6 +2,10 @@
 
 六个 Java 目标同步以下改动。完整规则见[玩法说明](docs/完整玩法说明.md)，历次安装包见 [GitHub Releases](https://github.com/jiaotan798/friendswine/releases)。
 
+## 0.2.1
+
+修复生物旋转、缩放时拴绳被整体带转、持绳端偏离的问题，两个端点分别跟随所属实体。六个 Java 端口同步，保留 YSM 模型动画兼容。六端构建、双客户端联机、Unbound／BSL 光影，以及五个官方支持端的 YSM 2.6.5 场景通过验证。 [验证记录](validation/0.2.1.md)
+
 ## 0.2.0
 
 六个 Java 端口更新游戏内模组简介，同步现行玩法并加入问题反馈入口。 [验证记录](validation/0.2.0.md)

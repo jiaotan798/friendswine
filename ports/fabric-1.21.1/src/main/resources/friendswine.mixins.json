@@ -9,6 +9,7 @@
   ],
   "client": [
     "EntityRenderDispatcherMixin",
+    "LeashRendererMixin",
     "CameraMixin",
     "SoundEngineMixin",
     "DeathFlashGuiMixin"
